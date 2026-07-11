@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -20,7 +20,7 @@
         .val { font-size: 18px; font-weight: bold; }
         .grid { display: flex; gap: 20px; flex: 1; min-height: 0; min-width: 750px; }
         .chart-win { flex: 2; background: #131419; border-radius: 8px; border: 1px solid #23263a; padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .tradingview-widget-container { width: 100%; height: 320px; border-radius: 6px; overflow: hidden; border: 1px solid #23263a; flex-shrink: 0; position: relative; }
+        .tradingview-widget-container { width: 100%; height: 320px; border-radius: 6px; overflow: hidden; border: 1px solid #23263a; flex-shrink: 0; }
         #tv-chart-widget { width: 100%; height: 100%; }
         .strat-side { width: 260px; background: var(--side); border-radius: 8px; border: 1px solid #23263a; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
         .group { margin-bottom: 12px; }
@@ -34,8 +34,6 @@
         td { padding: 8px 6px; border-bottom: 1px solid #1c1e26; font-size: 12px; font-family: monospace; color: #fff; }
         .scroll { max-height: 120px; overflow-y: auto; background: #0c0d10; border-radius: 4px; }
     </style>
-    <!-- Load the official TradingView script library -->
-    <script type="text/javascript" src="https://tradingview.com"></script>
 </head>
 <body>
     <div class="sidebar">
@@ -47,9 +45,9 @@
     <div class="main">
         <div class="top-dash">
             <div>
-                <button class="asset-btn" id="b-gold" onclick="sw('XAUUSD',2650.40,'Gold','FX:XAUUSD')">XAUUSD</button>
-                <button class="asset-btn active" id="b-btc" onclick="sw('BTCUSD',96420.00,'Bitcoin','BINANCE:BTCUSDT')">BTCUSD</button>
-                <button class="asset-btn" id="b-oil" onclick="sw('USOUSD',74.25,'Crude Oil','FX:USOIL')">USOUSD</button>
+                <button class="asset-btn" id="b-gold" onclick="sw('XAUUSD',2650.40,'Gold','XAUUSD')">XAUUSD</button>
+                <button class="asset-btn active" id="b-btc" onclick="sw('BTCUSD',96420.00,'Bitcoin','BTCUSDT')">BTCUSD</button>
+                <button class="asset-btn" id="b-oil" onclick="sw('USOUSD',74.25,'Crude Oil','USOIL')">USOUSD</button>
             </div>
             <div class="metrics">
                 <div class="card"><div class="val" style="color:var(--gold)" id="t-pr">$96,420.00</div><div style="font-size:10px" id="t-lbl">Bitcoin</div></div>
@@ -87,25 +85,11 @@
         let id=5001;
         
         function loadChartWidget(tickerSymbol) {
-            if (typeof TradingView !== 'undefined') {
-                new TradingView.widget({
-                    "width": "100%",
-                    "height": "100%",
-                    "symbol": tickerSymbol,
-                    "interval": "5",
-                    "timezone": "Etc/UTC",
-                    "theme": "dark",
-                    "style": "1",
-                    "locale": "en",
-                    "enable_publishing": false,
-                    "hide_side_toolbar": true,
-                    "allow_symbol_change": false,
-                    "container_id": "tv-chart-widget"
-                });
-            }
+            // Using the official, open-source secure platform URL to instantly pull the candlestick frames
+            document.getElementById('tv-chart-widget').innerHTML = `<iframe style="width:100%; height:100%; border:none; background:#131419;" src="https://tradingview.com{tickerSymbol}&interval=5&theme=dark&style=1"></iframe>`;
         }
 
-        window.onload = function() { loadChartWidget('BINANCE:BTCUSDT'); };
+        window.onload = function() { loadChartWidget('BTCUSDT'); };
 
         function sw(sym,pr,lbl,tvSym){
             document.getElementById('c-as').value=sym; document.getElementById('e-pr').value=pr;
