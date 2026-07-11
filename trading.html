@@ -1,40 +1,26 @@
-     <!-- Add this block right before your closing </body> tag -->
     <script>
-        // Global system memory arrays
         let trades = [];
         let tradeId = 1;
 
-        // Handles sidebar navigation tabs
         function switchTab(tabId) {
-            // Update sidebar button highlights
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.getElementById('nav-' + tabId).classList.add('active');
-
-            // Toggle viewable grid panels
             document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
             document.getElementById('panel-' + tabId).classList.add('active');
         }
 
-        // Handles changing the active trading asset ('sw' function)
         function sw(symbol, price, label) {
-            // Update macro input configuration
             document.getElementById('c-as').value = symbol;
             document.getElementById('e-pr').value = price;
-            
-            // Update upper dashboard widget metric displays
             document.getElementById('t-pr').innerText = '$' + price.toLocaleString(undefined, {minimumFractionDigits: 2});
             document.getElementById('t-lbl').innerText = label;
-
-            // Update top asset button visual selection highlights
             document.querySelectorAll('.asset-btn').forEach(btn => btn.classList.remove('active'));
             if(symbol === 'XAUUSD') document.getElementById('b-gold').classList.add('active');
             if(symbol === 'BTCUSD') document.getElementById('b-btc').classList.add('active');
             if(symbol === 'USOUSD') document.getElementById('b-oil').classList.add('active');
         }
 
-        // Handles logging execution data ('ex' function)
         function ex(actionType) {
-            // Capture raw input values from the control panel
             const asset = document.getElementById('c-as').value;
             const price = parseFloat(document.getElementById('e-pr').value);
             const volume = parseFloat(document.getElementById('e-sz').value);
@@ -46,13 +32,11 @@
                 return;
             }
 
-            // Calculate operational fee and tax metrics
             const rawTotal = price * volume;
             const feesPaid = rawTotal * (feePct / 100);
             const adjustedTotal = actionType === 'BUY' ? (rawTotal + feesPaid) : (rawTotal - feesPaid);
-
-            // Construct new ledger structural object
             const timestamp = new Date().toLocaleTimeString();
+
             const newTrade = {
                 id: tradeId++,
                 time: timestamp,
@@ -70,7 +54,6 @@
             renderTables();
         }
 
-        // Updates data views across multiple modules
         function renderTables() {
             const liveBody = document.getElementById('t-body');
             const vaultBody = document.getElementById('l-body');
@@ -78,32 +61,14 @@
             liveBody.innerHTML = '';
             vaultBody.innerHTML = '';
 
-            // Generate structural views down both tabular data sets
             trades.forEach(t => {
-                // Populate Live Radar Transaction Tape
                 const actionColor = t.action === 'BUY' ? 'var(--green)' : 'var(--red)';
-                liveBody.innerHTML += `
-                    <tr>
-                        <td>${t.time}</td>
-                        <td>${t.asset}</td>
-                        <td style="color:${actionColor}; font-weight:bold;">${t.action}</td>
-                        <td>$${t.price}</td>
-                        <td>${t.size}</td>
-                    </tr>`;
+                
+                // Uses backticks (``) for template strings
+                liveBody.innerHTML += `<tr><td>${t.time}</td><td>${t.asset}</td><td style="color:${actionColor}; font-weight:bold;">${t.action}</td><td>$${t.price}</td><td>${t.size}</td></tr>`;
 
-                // Populate Historical Vault Ledger
-                vaultBody.innerHTML += `
-                    <tr>
-                        <td>#${t.id}</td>
-                        <td>${t.asset}</td>
-                        <td>${t.action}</td>
-                        <td>$${t.rawTotal}</td>
-                        <td>$${t.feesPaid}</td>
-                        <td>${t.taxPct}%</td>
-                        <td style="color:var(--gold);">$${t.adjustedTotal}</td>
-                    </tr>`;
+                // Uses backticks (``) for template strings
+                vaultBody.innerHTML += `<tr><td>#${t.id}</td><td>${t.asset}</td><td>${t.action}</td><td>$${t.rawTotal}</td><td>$${t.feesPaid}</td><td>${t.taxPct}%</td><td style="color:var(--gold);">$${t.adjustedTotal}</td></tr>`;
             });
         }
     </script>
-</body>
-</html>
