@@ -1,132 +1,109 @@
- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TapeLedger Workspace</title>
-    <style>
-        :root { --bg: #0c0c0e; --side: #131419; --gold: #d4af37; --red: #ce380f; --green: #1c752b; --text: #afbada; --card: #1d2032; }
-        body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 220px; background: var(--side); border-right: 1px solid #23263a; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; flex-shrink: 0; }
-        .logo { font-weight: bold; font-size: 18px; color: var(--gold); margin-bottom: 25px; }
-        .nav-item { padding: 12px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text); transition: background 0.2s; }
-        .nav-item.active, .nav-item:hover { background: var(--card); color: #fff; }
-        .main { flex: 1; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; overflow-x: auto; }
-        .top-dash { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; min-width: 750px; }
-        .asset-btn { background: #1c1c1f; border: 1px solid #2d3340; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-right: 5px; }
-        .asset-btn.active { background: var(--red); border-color: var(--red); }
-        .metrics { display: flex; gap: 10px; }
-        .card { background: var(--card); padding: 10px 15px; border-radius: 6px; text-align: center; border: 1px solid #23263a; }
-        .val { font-size: 18px; font-weight: bold; }
-        .grid { display: flex; gap: 20px; flex: 1; min-height: 0; min-width: 750px; }
-        .chart-win { flex: 2; background: #131419; border-radius: 8px; border: 1px solid #23263a; padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .tab-panel { display: none; flex-direction: column; gap: 20px; height: 100%; width: 100%; }
-        .tab-panel.active { display: flex; }
-        .strat-side { width: 260px; background: var(--side); border-radius: 8px; border: 1px solid #23263a; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .group { margin-bottom: 12px; }
-        label { display: block; font-size: 12px; margin-bottom: 6px; color: #fff; }
-        input, select { width: 100%; background: var(--card); border: 1px solid #23263a; color: #fff; padding: 8px; border-radius: 6px; box-sizing: border-box; }
-        .exec-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .btn { padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; text-transform: uppercase; }
-        .btn-buy { background: var(--green); } .btn-sell { background: var(--red); }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { font-size: 11px; color: #616e88; padding: 6px; border-bottom: 1px solid #23263a; }
-        td { padding: 8px 6px; border-bottom: 1px solid #1c1e26; font-size: 12px; font-family: monospace; color: #fff; }
-        .scroll { max-height: 180px; overflow-y: auto; background: #0c0d10; border-radius: 4px; }
-        .coach-card { background: var(--card); border: 1px solid #23263a; padding: 20px; border-radius: 8px; margin-bottom: 15px; }
-        .chart-placeholder { width: 100%; height: 320px; background: #090a0d; border: 1px dashed #23263a; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #616e88; flex-shrink: 0; }
-    </style>
-</head>
-<body>
-    <div class="sidebar">
-        <div class="logo">⏱️ TAPELEDGER</div>
-        <div class="nav-item active" id="nav-radar" onclick="switchTab('radar')">📡 Live Radar</div>
-        <div class="nav-item" id="nav-vault" onclick="switchTab('vault')">🗃️ Vault Ledger</div>
-        <div class="nav-item" id="nav-coach" onclick="switchTab('coach')">🧠 Discipline Coach</div>
-    </div>
-    <div class="main">
-        <div class="top-dash">
-            <div>
-                <button class="asset-btn" id="b-gold" onclick="sw('XAUUSD',2650.40,'Gold')">XAUUSD</button>
-                <button class="asset-btn active" id="b-btc" onclick="sw('BTCUSD',96420.00,'Bitcoin')">BTCUSD</button>
-                <button class="asset-btn" id="b-oil" onclick="sw('USOUSD',74.25,'Crude Oil')">USOUSD</button>
-            </div>
-            <div class="metrics">
-                <div class="card"><div class="val" style="color:var(--gold)" id="t-pr">$96,420.00</div><div style="font-size:10px" id="t-lbl">Bitcoin</div></div>
-                <div class="card"><div class="val" style="color:var(--green)">100%</div><div style="font-size:10px">Win Rate</div></div>
-            </div>
-        </div>
-
-        <div class="grid tab-panel active" id="panel-radar">
-            <div style="display:flex; gap:20px; width:100%; height:100%;">
-                <div class="chart-win">
-                    <div class="chart-placeholder">📊 Standalone Canvas Ready — Local Data Loop Enabled</div>
-                    <div>
-                        <h4 style="margin:0 0 5px 0; font-size:12px; color:#616e88;">LIVE TRANSACTION TAPE</h4>
-                        <div class="scroll"><table><thead><tr><th>Time</th><th>Asset</th><th>Action</th><th>Price</th><th>Size</th></tr></thead><tbody id="t-body"></tbody></table></div>
-                    </div>
-                </div>
-                <div class="strat-side">
-                    <div style="font-size:12px; font-weight:bold; color:var(--gold); margin-bottom:10px;">MACRO CONFIG</div>
-                    <div class="group"><label for="c-as">Asset</label><input type="text" id="c-as" value="BTCUSD" readonly></div>
-                    <div class="group"><label for="e-pr">Price ($)</label><input type="number" id="e-pr" value="96420"></div>
-                    <div class="group"><label for="e-sz">Volume</label><input type="number" id="e-sz" value="0.50" step="0.01"></div>
-                    <div class="group"><label for="m-an">Anchor</label><select id="m-an"><option>Bullish Expansion</option><option>Bearish Retracement</option></select></div>
-                    <div style="border-top:1px solid #23263a; margin-top:10px; padding-top:10px; font-size:11px; font-weight:bold; color:var(--gold);">ADJUSTED EXPENSES</div>
-                    <div class="group" style="margin-top:5px;"><label for="fee-pct">Broker Fee (%)</label><input type="number" id="fee-pct" value="0.15" step="0.01"></div>
-                    <div class="group"><label for="tax-pct">Manual Tax (%)</label><input type="number" id="tax-pct" value="20.00" step="0.5"></div>
-                    <div class="exec-btns">
-                        <button class="btn btn-buy" onclick="ex('BUY')">Buy</button>
-                        <button class="btn btn-sell" onclick="ex('SELL')">Sell</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid tab-panel" id="panel-vault">
-            <div class="chart-win" style="flex:1;">
-                <h3 style="margin:0; color:#fff;">Historical Vault Ledger</h3>
-                <p style="font-size:13px; color:#616e88; margin-top:5px;">Comprehensive accounting record including fee adjustments.</p>
-                <div class="scroll" style="max-height:100%;">
-                    <table>
-                        <thead>
-                            <tr><th>ID</th><th>Asset</th><th>Type</th><th>Raw Total</th><th>Fees Paid</th><th>Tax %</th><th>Adjusted Total</th></tr>
-                        </thead>
-                        <tbody id="l-body"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid tab-panel" id="panel-coach">
-            <div class="chart-win" style="flex:1; overflow-y:auto;">
-                <h3 style="margin:0; color:#fff;">Psychology & Risk Management Guidelines</h3>
-                <div class="coach-card">
-                    <h4 style="margin:0 0 10px 0; color:var(--gold);">🛡️ Capital Protection Rule (Max 1%)</h4>
-                    <p style="margin:0; font-size:13px; line-height:1.5;">Never allocate risk exposure exceeding 1% of total vault equity on a single execution script.</p>
-                </div>
-                <div class="coach-card">
-                    <h4 style="margin:0 0 10px 0; color:var(--red);">🛑 Circuit Breaker Variable</h4>
-                    <p style="margin:0; font-size:13px; line-height:1.5;">If your daily track record hits two consecutive losses, lock down execution options immediately.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
+     <!-- Add this block right before your closing </body> tag -->
     <script>
-        let id=5001;
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            const targetPanel = document.getElementById('panel-' + tabName);
-            const targetNav = document.getElementById('nav-' + tabName);
-            if(targetPanel) targetPanel.classList.add('active');
-            if(targetNav) targetNav.classList.add('active');
+        // Global system memory arrays
+        let trades = [];
+        let tradeId = 1;
+
+        // Handles sidebar navigation tabs
+        function switchTab(tabId) {
+            // Update sidebar button highlights
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-' + tabId).classList.add('active');
+
+            // Toggle viewable grid panels
+            document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+            document.getElementById('panel-' + tabId).classList.add('active');
         }
-        function sw(sym,pr,lbl){
-            const cAs = document.getElementById('c-as'), ePr = document.getElementById('e-pr');
-            const tPr = document.getElementById('t-pr'), tLbl = document.getElementById('t-lbl');
-            if(cAs) cAs.value = sym; if(ePr) ePr.value = pr;
-            if(tPr) tPr.innerText = "$" + pr.toLocaleString(); if(tLbl) tLbl.innerText = lbl;
-            document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active'));
-            if(sym==='XAUUSD') { const b = document.getElementById('b-gold'); if(b) b.classList.add('active'); }
+
+        // Handles changing the active trading asset ('sw' function)
+        function sw(symbol, price, label) {
+            // Update macro input configuration
+            document.getElementById('c-as').value = symbol;
+            document.getElementById('e-pr').value = price;
+            
+            // Update upper dashboard widget metric displays
+            document.getElementById('t-pr').innerText = '$' + price.toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById('t-lbl').innerText = label;
+
+            // Update top asset button visual selection highlights
+            document.querySelectorAll('.asset-btn').forEach(btn => btn.classList.remove('active'));
+            if(symbol === 'XAUUSD') document.getElementById('b-gold').classList.add('active');
+            if(symbol === 'BTCUSD') document.getElementById('b-btc').classList.add('active');
+            if(symbol === 'USOUSD') document.getElementById('b-oil').classList.add('active');
+        }
+
+        // Handles logging execution data ('ex' function)
+        function ex(actionType) {
+            // Capture raw input values from the control panel
+            const asset = document.getElementById('c-as').value;
+            const price = parseFloat(document.getElementById('e-pr').value);
+            const volume = parseFloat(document.getElementById('e-sz').value);
+            const feePct = parseFloat(document.getElementById('fee-pct').value);
+            const taxPct = parseFloat(document.getElementById('tax-pct').value);
+
+            if (isNaN(price) || isNaN(volume)) {
+                alert("Please input valid price and volume parameters.");
+                return;
+            }
+
+            // Calculate operational fee and tax metrics
+            const rawTotal = price * volume;
+            const feesPaid = rawTotal * (feePct / 100);
+            const adjustedTotal = actionType === 'BUY' ? (rawTotal + feesPaid) : (rawTotal - feesPaid);
+
+            // Construct new ledger structural object
+            const timestamp = new Date().toLocaleTimeString();
+            const newTrade = {
+                id: tradeId++,
+                time: timestamp,
+                asset: asset,
+                action: actionType,
+                price: price.toFixed(2),
+                size: volume.toFixed(2),
+                rawTotal: rawTotal.toFixed(2),
+                feesPaid: feesPaid.toFixed(2),
+                taxPct: taxPct.toFixed(2),
+                adjustedTotal: adjustedTotal.toFixed(2)
+            };
+
+            trades.push(newTrade);
+            renderTables();
+        }
+
+        // Updates data views across multiple modules
+        function renderTables() {
+            const liveBody = document.getElementById('t-body');
+            const vaultBody = document.getElementById('l-body');
+            
+            liveBody.innerHTML = '';
+            vaultBody.innerHTML = '';
+
+            // Generate structural views down both tabular data sets
+            trades.forEach(t => {
+                // Populate Live Radar Transaction Tape
+                const actionColor = t.action === 'BUY' ? 'var(--green)' : 'var(--red)';
+                liveBody.innerHTML += `
+                    <tr>
+                        <td>${t.time}</td>
+                        <td>${t.asset}</td>
+                        <td style="color:${actionColor}; font-weight:bold;">${t.action}</td>
+                        <td>$${t.price}</td>
+                        <td>${t.size}</td>
+                    </tr>`;
+
+                // Populate Historical Vault Ledger
+                vaultBody.innerHTML += `
+                    <tr>
+                        <td>#${t.id}</td>
+                        <td>${t.asset}</td>
+                        <td>${t.action}</td>
+                        <td>$${t.rawTotal}</td>
+                        <td>$${t.feesPaid}</td>
+                        <td>${t.taxPct}%</td>
+                        <td style="color:var(--gold);">$${t.adjustedTotal}</td>
+                    </tr>`;
+            });
+        }
+    </script>
+</body>
+</html>
