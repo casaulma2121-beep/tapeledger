@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TapeLedger - Advanced Trading Canvas</title>
     
-    <!-- Lightweight Charting Standalone Library Framework -->
+    <!-- Standalone Charting Framework -->
     <script src="https://unpkg.com"></script>
 
     <style>
@@ -38,7 +38,6 @@
             width: 100%;
         }
 
-        /* Top Asset Switcher Bar Layout */
         .top-navbar {
             grid-column: span 2;
             display: flex;
@@ -86,7 +85,6 @@
             font-size: 18px;
         }
 
-        /* Left Side: Chart Canvas & Live Tape Setup */
         .workspace-left {
             display: flex;
             flex-direction: column;
@@ -144,7 +142,6 @@
             border-bottom: 1px solid #1c202b;
         }
 
-        /* Right Side: Macro Control Panel Configuration */
         .control-panel-right {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -152,7 +149,9 @@
             padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            justify-content: space-between;
+            min-height: 480px;
+            box-sizing: border-box;
         }
 
         .panel-section-title {
@@ -161,13 +160,14 @@
             letter-spacing: 1px;
             color: var(--accent-red);
             font-weight: 700;
-            margin: 0;
+            margin: 0 0 15px 0;
         }
 
         .input-group {
             display: flex;
             flex-direction: column;
             gap: 6px;
+            margin-bottom: 15px;
         }
 
         .input-group label {
@@ -193,7 +193,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            margin-top: 10px;
+            margin-top: auto;
         }
 
         .btn-trade {
@@ -219,7 +219,7 @@
 
     <div class="dashboard-container">
         
-        <!-- Top Navigation Asset Selector Bar -->
+        <!-- Top Asset Switcher Row -->
         <div class="top-navbar">
             <div class="asset-tabs">
                 <button class="tab-btn" id="tab-XAUUSD" onclick="sw('XAUUSD')">XAUUSD</button>
@@ -228,7 +228,7 @@
             </div>
             <div class="live-stats">
                 <div class="stat-box">
-                    <div style="font-size: 11px; color: var(--text-muted);">Bitcoin Price</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Active Feed Price</div>
                     <div class="stat-val" id="header-price-display" style="color: #ffaa00;">$96,420.00</div>
                 </div>
                 <div class="stat-box">
@@ -238,7 +238,7 @@
             </div>
         </div>
 
-        <!-- Left Column: Displaying Visual Metrics System -->
+        <!-- Left Side Workspace -->
         <div class="workspace-left">
             <div class="chart-wrapper">
                 <div id="chart-canvas"></div>
@@ -257,29 +257,33 @@
                         </tr>
                     </thead>
                     <tbody id="tape-rows">
-                        <!-- Simulated active position entries will mount dynamically here -->
+                        <!-- Click actions will print logs directly here -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Right Column: Interactive Parameter Settings Panel -->
+        <!-- Right Side Control Matrix (Cleaned Up Config Only) -->
         <div class="control-panel-right">
             <div>
                 <p class="panel-section-title">Macro Config</p>
-                <div class="input-group" style="margin-top: 12px;">
+                
+                <div class="input-group">
                     <label>Asset</label>
                     <input type="text" id="input-asset" value="BTCUSD" readonly>
                 </div>
-                <div class="input-group" style="margin-top: 12px;">
+                
+                <div class="input-group">
                     <label>Price ($)</label>
                     <input type="number" id="input-price" value="96420">
                 </div>
-                <div class="input-group" style="margin-top: 12px;">
+                
+                <div class="input-group">
                     <label>Volume</label>
                     <input type="number" id="input-volume" step="0.0001" value="0.5088">
                 </div>
-                <div class="input-group" style="margin-top: 12px;">
+                
+                <div class="input-group">
                     <label>Anchor</label>
                     <select>
                         <option>Bullish Expansion</option>
@@ -288,20 +292,8 @@
                 </div>
             </div>
 
-            <div>
-                <p class="panel-section-title" style="color: #ffaa00;">Adjusted Expenses</p>
-                <div class="input-group" style="margin-top: 12px;">
-                    <label>Broker Fee (%)</label>
-                    <input type="number" step="0.0001" value="0.1588">
-                </div>
-                <div class="input-group" style="margin-top: 12px;">
-                    <label>Manual Tax (%)</label>
-                    <input type="number" step="0.0001" value="20.0099">
-                </div>
-            </div>
-
+            <!-- Execution triggers cleanly map to scripts without any tax blocks -->
             <div class="action-buttons">
-                <!-- Buttons are securely mapped to programmatic ex() function interfaces -->
                 <button class="btn-trade btn-buy" onclick="ex('BUY')">BUY</button>
                 <button class="btn-trade btn-sell" onclick="ex('SELL')">SELL</button>
             </div>
@@ -309,11 +301,27 @@
 
     </div>
 
-    <!-- Active Interface Processing Script Engine -->
     <script>
         let currentActiveAsset = "BTCUSD";
         let chartInstance;
         let candleSeriesInstance;
 
-        // Initialize Standalone Charting Mechanics on Window Mount
+        window.addEventListener('DOMContentLoaded', () => {
+            const chartDiv = document.getElementById('chart-canvas');
+            
+            chartInstance = LightweightCharts.createChart(chartDiv, {
+                width: chartDiv.clientWidth,
+                height: 350,
+                layout: { background: { color: '#12141a' }, textColor: '#9ca3af' },
+                grid: { vertLines: { color: '#1f2430' }, horzLines: { color: '#1f2430' } },
+                timeScale: { borderColor: '#2a2f3d' }
+            });
+
+            candleSeriesInstance = chartInstance.addCandlestickSeries({
+                upColor: '#00b074', downColor: '#ff5a5f',
+                borderVisible: false, wickUpColor: '#00b074', wickDownColor: '#ff5a5f'
+            });
+
+            loadMockDataForAsset("BTCUSD");
+
  
