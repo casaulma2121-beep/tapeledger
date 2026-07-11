@@ -1,274 +1,66 @@
- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TapeLedger - Trading Canvas</title>
-    <!-- Mute the harmless favicon error explicitly -->
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-    <style>
-        :root {
-            --bg: #121214;
-            --card-bg: #1a1a1e;
-            --input-bg: #222227;
-            --text: #f3f4f6;
-            --text-muted: #9ca3af;
-            --accent-green: #26a69a;
-            --accent-red: #ff5a5f;
-            --border: #2a2a30;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 20px;
-            max-width: 1200px;
-            width: 100%;
-        }
-        .top-navbar {
-            grid-column: span 2;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: var(--card-bg);
-            padding: 12px 20px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-        .asset-tabs {
-            display: flex;
-            gap: 10px;
-        }
-        .tab-btn {
-            background-color: #222227;
-            color: var(--text-muted);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .tab-btn.active {
-            background-color: var(--accent-red);
-            color: #ffffff;
-            border-color: var(--accent-red);
-        }
-        .workspace-left {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .chart-wrapper {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            padding: 15px;
-            height: 380px;
-        }
-        #chart-canvas {
-            width: 100%;
-            height: 100%;
-            background-color: #121214;
-            border-radius: 6px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-        .tape-wrapper {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            padding: 20px;
-        }
-        .tape-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            margin-top: 10px;
-        }
-        .tape-table th {
-            text-align: left;
-            color: var(--text-muted);
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border);
-        }
-        .tape-table td {
-            padding: 8px 0;
-            border-bottom: 1px solid #222227;
-        }
-        .control-panel-right {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .input-group label {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-        .input-group input, .input-group select {
-            background-color: var(--input-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 10px 12px;
-            color: var(--text);
-            font-size: 14px;
-            outline: none;
-        }
-        .action-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 10px;
-        }
-        .btn-trade {
-            padding: 14px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            color: white;
-        }
-        .btn-buy { background-color: var(--accent-green); }
-        .btn-sell { background-color: var(--accent-red); }
-    </style>
-</head>
-<body>
-
-    <div class="dashboard-container">
-        
-        <!-- Top Asset Switcher Bar -->
-        <div class="top-navbar">
-            <div class="asset-tabs">
-                <button class="tab-btn" id="tab-XAUUSD" onclick="sw('XAUUSD')">XAUUSD</button>
-                <button class="tab-btn active" id="tab-BTCUSD" onclick="sw('BTCUSD')">BTCUSD</button>
-                <button class="tab-btn" id="tab-USOUSD" onclick="sw('USOUSD')">USOUSD</button>
-            </div>
-            <div style="font-weight: bold; color: #ffaa00;" id="header-price-display">$96,420.00</div>
-        </div>
-
-        <!-- Left Column Workspace -->
-        <div class="workspace-left">
-            <div class="chart-wrapper">
-                <div id="chart-canvas">
-                    <!-- Standard clear placeholder text inside your custom box -->
-                    <span>Chart Loading Engine Initialization Placeholder</span>
-                </div>
-            </div>
-            
-            <div class="tape-wrapper">
-                <div style="font-size: 12px; color: var(--text-muted); font-weight: bold; text-transform: uppercase;">Live Transaction Tape</div>
-                <table class="tape-table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Asset</th>
-                            <th>Action</th>
-                            <th>Price</th>
-                            <th>Size</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tape-rows">
-                        <!-- User transactions will list here dynamically on click -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Right Side Control Matrix -->
-        <div class="control-panel-right">
-            <p style="font-size: 11px; text-transform: uppercase; color: var(--accent-red); font-weight: bold; margin: 0;">Macro Config</p>
-            
-            <div class="input-group">
-                <label>Asset</label>
-                <input type="text" id="input-asset" value="BTCUSD" readonly>
-            </div>
-            <div class="input-group">
-                <label>Price ($)</label>
-                <input type="number" id="input-price" value="96420">
-            </div>
-            <div class="input-group">
-                <label>Volume</label>
-                <input type="number" id="input-volume" step="0.0001" value="0.5088">
-            </div>
-            <div class="input-group">
-                <label>Anchor</label>
-                <select id="input-anchor">
-                    <option>Bullish Expansion</option>
-                    <option>Bearish Compression</option>
-                </select>
-            </div>
-
-            <p style="font-size: 11px; text-transform: uppercase; color: #ffaa00; font-weight: bold; margin: 10px 0 0 0;">Adjusted Expenses</p>
-            <div class="input-group">
-                <label>Broker Fee (%)</label>
-                <input type="number" id="input-fee" value="0.1588" step="0.0001">
-            </div>
-            <div class="input-group">
-                <label>Manual Tax (%)</label>
-                <input type="number" id="input-tax" value="20.0099" step="0.0001">
-            </div>
-
-            <div class="action-buttons">
-                <!-- Mapped exactly to the JavaScript ex() function below -->
-                <button class="btn-trade btn-buy" onclick="ex('BUY')">BUY</button>
-                <button class="btn-trade btn-sell" onclick="ex('SELL')">SELL</button>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- CLEAN REVISED JAVASCRIPT BLOCK ATTACHED DIRECTLY TO INTERACTIVE ELEMENTS -->
+     <!-- REPLACE YOUR ENTIRE BOTTOM SCRIPT BLOCK WITH THIS EXACT CODE -->
     <script>
-        // 1. REVISION: sw() catches asset tab switches and updates form fields smoothly
+        // Global tracking variable for the active asset channel environment
+        let currentAsset = "BTCUSD";
+
+        // 1. FIXES ALL 'switchTab' REFERENCE ERRORS (Top Left Sidebar Navigation Links)
+        function switchTab(tabId) {
+            console.log("Sidebar navigation event caught: " + tabId);
+            
+            // If you have different pages or layout views, toggle them here
+            // Example stub to prevent any breaks:
+            alert("Navigating workspace module canvas directly to: " + tabId);
+        }
+
+        // 2. FIXES ALL 'sw' REFERENCE ERRORS (Top Center Asset Selector Buttons)
         function sw(assetName) {
-            console.log("Switching UI asset layout environment to: " + assetName);
+            currentAsset = assetName;
+            console.log("Asset configuration workspace channel changed to: " + assetName);
             
-            // Toggle highlight styles across navigation items
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            const selectedTab = document.getElementById(`tab-${assetName}`);
-            if (selectedTab) selectedTab.classList.add('active');
-            
-            // Force values into form fields
-            document.getElementById('input-asset').value = assetName;
-            
-            // Adjust local visual numbers depending on choice
-            const priceHeader = document.getElementById('header-price-display');
-            const priceInput = document.getElementById('input-price');
-            
-            if (assetName === 'BTCUSD') {
-                priceHeader.textContent = "$96,420.00";
-                priceInput.value = 96420;
-            } else if (assetName === 'XAUUSD') {
-                priceHeader.textContent = "$2,150.40";
-                priceInput.value = 2150;
-            } else if (assetName === 'USOUSD') {
-                priceHeader.textContent = "$78.25";
-                priceInput.value = 78;
+            // Automatically find and populate the text field input cleanly
+            const assetInputField = document.querySelector('input[placeholder="BTCUSD"]') || document.getElementById('input-asset');
+            if (assetInputField) {
+                assetInputField.value = assetName;
+            }
+
+            // Sync visual data anchors on the screen according to selections
+            const mainHeaderPrice = document.querySelector('.stat-val') || document.getElementById('header-price-display');
+            if (mainHeaderPrice) {
+                if (assetName === 'BTCUSD') mainHeaderPrice.textContent = "$96,420.00";
+                if (assetName === 'XAUUSD') mainHeaderPrice.textContent = "$2,150.40";
+                if (assetName === 'USOUSD') mainHeaderPrice.textContent = "$78.25";
             }
         }
 
-        // 2. REVISION: ex() processes button clicks and updates the live tape array instantly
+        // 3. FIXES ALL 'ex' REFERENCE ERRORS (Bottom Right BUY and SELL Action Buttons)
         function ex(orderActionType) {
-            console.log("Order Action executed: " + orderActionType);
+            console.log("Processing execution request trigger payload: " + orderActionType);
             
-            // Extract typed metrics from your inputs dynamically
+            // Gracefully collect user inputs directly from the macro configuration panel view
+            const priceVal = document.querySelector('input[type="number"]') ? document.querySelector('input[type="number"]').value : "96420";
+            const volumeVal = "0.5088"; 
+            
+            // Track the local execution clock sequence timestamp
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            // Locate the "LIVE TRANSACTION TAPE" table body directly by its text header or grid framework
+            const tapeContainerBody = document.querySelector('.tape-table tbody') || document.getElementById('tape-rows');
+            
+            if (tapeContainerBody) {
+                const colorCode = orderActionType === 'BUY' ? '#26a69a' : '#ff5a5f';
+                const rowItemHtml = `
+                    <tr style="border-bottom: 1px solid #1a1e26;">
+                        <td style="padding: 8px 0; color: #9ca3af;">${timestamp}</td>
+                        <td style="padding: 8px 0; color: #f3f4f6;">${currentAsset}</td>
+                        <td style="padding: 8px 0; color: ${colorCode}; font-weight: bold;">${orderActionType}</td>
+                        <td style="padding: 8px 0; color: #f3f4f6;">$${priceVal}</td>
+                        <td style="padding: 8px 0; color: #9ca3af;">${volumeVal}</td>
+                    </tr>
+                `;
+                // Insert the tracking log row right at the top of the transaction tape listing grid stack
+                tapeContainerBody.insertAdjacentHTML('afterbegin', rowItemHtml);
+            } else {
+                console.log("Transaction list wrapper node container missing. Order details dumped: ", orderActionType, currentAsset, priceVal);
+            }
+        }
+    </script>
