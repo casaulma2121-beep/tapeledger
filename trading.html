@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -118,11 +118,9 @@
 
     <!-- SCRIPTS CONFIGURATION -->
     <script>
-        // Array tracks trade data memory
         let trades = [];
         let tradeId = 1;
 
-        // Auto-run when file opens to populate standard base trade view
         window.onload = function() {
             renderTables();
         };
@@ -138,3 +136,4 @@
             document.getElementById('c-as').value = symbol;
             document.getElementById('e-pr').value = price;
             document.getElementById('t-pr').innerText = '$' + price.toLocaleString(undefined, {minimumFractionDigits: 2});
+            document.getElementById('t-lbl').innerText = label;
