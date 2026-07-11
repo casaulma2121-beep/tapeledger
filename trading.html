@@ -1,3 +1,20 @@
+         <!-- ... Previous code above remains exactly the same ... -->
+
+        <div class="grid tab-panel" id="panel-coach">
+            <div class="chart-win" style="flex:1; overflow-y:auto;">
+                <h3 style="margin:0; color:#fff;">Psychology & Risk Management Guidelines</h3>
+                <div class="coach-card">
+                    <h4 style="margin:0 0 10px 0; color:var(--gold);">1. Define Your Risk Per Trade</h4>
+                    <p style="margin:0; font-size:13px; line-height:1.4;">Never risk more than 1-2% of your account balance on a single execution. Consistency beats size.</p>
+                </div>
+                <div class="coach-card">
+                    <h4 style="margin:0 0 10px 0; color:var(--gold);">2. Embrace the Tape Loop</h4>
+                    <p style="margin:0; font-size:13px; line-height:1.4;">Let transaction paths clear cleanly. Avoid emotional revenge trading when a setup breaks validation anchors.</p>
+                </div>
+            </div>
+        </div>
+    </div> <!-- Closes .main -->
+
     <script>
         let trades = [];
         let tradeId = 1;
@@ -63,12 +80,10 @@
 
             trades.forEach(t => {
                 const actionColor = t.action === 'BUY' ? 'var(--green)' : 'var(--red)';
-                
-                // Uses backticks (``) for template strings
                 liveBody.innerHTML += `<tr><td>${t.time}</td><td>${t.asset}</td><td style="color:${actionColor}; font-weight:bold;">${t.action}</td><td>$${t.price}</td><td>${t.size}</td></tr>`;
-
-                // Uses backticks (``) for template strings
                 vaultBody.innerHTML += `<tr><td>#${t.id}</td><td>${t.asset}</td><td>${t.action}</td><td>$${t.rawTotal}</td><td>$${t.feesPaid}</td><td>${t.taxPct}%</td><td style="color:var(--gold);">$${t.adjustedTotal}</td></tr>`;
             });
         }
     </script>
+</body>
+</html>
