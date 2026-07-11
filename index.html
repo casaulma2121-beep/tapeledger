@@ -1,66 +1,44 @@
-     <!-- REPLACE YOUR ENTIRE BOTTOM SCRIPT BLOCK WITH THIS EXACT CODE -->
+    <!-- ... Your existing HTML buttons are up here ... -->
+
     <script>
-        // Global tracking variable for the active asset channel environment
         let currentAsset = "BTCUSD";
 
-        // 1. FIXES ALL 'switchTab' REFERENCE ERRORS (Top Left Sidebar Navigation Links)
         function switchTab(tabId) {
-            console.log("Sidebar navigation event caught: " + tabId);
-            
-            // If you have different pages or layout views, toggle them here
-            // Example stub to prevent any breaks:
-            alert("Navigating workspace module canvas directly to: " + tabId);
+            console.log("Sidebar navigation to: " + tabId);
         }
 
-        // 2. FIXES ALL 'sw' REFERENCE ERRORS (Top Center Asset Selector Buttons)
         function sw(assetName) {
             currentAsset = assetName;
-            console.log("Asset configuration workspace channel changed to: " + assetName);
+            console.log("Asset changed to: " + assetName);
             
-            // Automatically find and populate the text field input cleanly
-            const assetInputField = document.querySelector('input[placeholder="BTCUSD"]') || document.getElementById('input-asset');
-            if (assetInputField) {
-                assetInputField.value = assetName;
-            }
-
-            // Sync visual data anchors on the screen according to selections
-            const mainHeaderPrice = document.querySelector('.stat-val') || document.getElementById('header-price-display');
-            if (mainHeaderPrice) {
-                if (assetName === 'BTCUSD') mainHeaderPrice.textContent = "$96,420.00";
-                if (assetName === 'XAUUSD') mainHeaderPrice.textContent = "$2,150.40";
-                if (assetName === 'USOUSD') mainHeaderPrice.textContent = "$78.25";
-            }
+            // Sync values into the "Asset" text field input automatically
+            const assetInput = document.getElementById('input-asset') || document.querySelector('input[value="BTCUSD"]');
+            if (assetInput) assetInput.value = assetName;
         }
 
-        // 3. FIXES ALL 'ex' REFERENCE ERRORS (Bottom Right BUY and SELL Action Buttons)
         function ex(orderActionType) {
-            console.log("Processing execution request trigger payload: " + orderActionType);
+            console.log("Order executed: " + orderActionType);
             
-            // Gracefully collect user inputs directly from the macro configuration panel view
-            const priceVal = document.querySelector('input[type="number"]') ? document.querySelector('input[type="number"]').value : "96420";
-            const volumeVal = "0.5088"; 
-            
-            // Track the local execution clock sequence timestamp
+            const priceVal = document.getElementById('input-price')?.value || "96420";
+            const volumeVal = document.getElementById('input-volume')?.value || "0.5088"; 
             const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             
-            // Locate the "LIVE TRANSACTION TAPE" table body directly by its text header or grid framework
-            const tapeContainerBody = document.querySelector('.tape-table tbody') || document.getElementById('tape-rows');
+            const tapeRows = document.getElementById('tape-rows') || document.querySelector('.tape-table tbody');
             
-            if (tapeContainerBody) {
+            if (tapeRows) {
                 const colorCode = orderActionType === 'BUY' ? '#26a69a' : '#ff5a5f';
                 const rowItemHtml = `
                     <tr style="border-bottom: 1px solid #1a1e26;">
                         <td style="padding: 8px 0; color: #9ca3af;">${timestamp}</td>
                         <td style="padding: 8px 0; color: #f3f4f6;">${currentAsset}</td>
                         <td style="padding: 8px 0; color: ${colorCode}; font-weight: bold;">${orderActionType}</td>
-                        <td style="padding: 8px 0; color: #f3f4f6;">$${priceVal}</td>
+                        <td style="padding: 8px 0; color: #f3f4f6;">$${parseFloat(priceVal).toLocaleString()}</td>
                         <td style="padding: 8px 0; color: #9ca3af;">${volumeVal}</td>
                     </tr>
                 `;
-                // Insert the tracking log row right at the top of the transaction tape listing grid stack
-                tapeContainerBody.insertAdjacentHTML('afterbegin', rowItemHtml);
-            } else {
-                console.log("Transaction list wrapper node container missing. Order details dumped: ", orderActionType, currentAsset, priceVal);
+                tapeRows.insertAdjacentHTML('afterbegin', rowItemHtml);
             }
         }
     </script>
+</body>
+</html>
