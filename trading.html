@@ -84,7 +84,8 @@
     <script>
         let id=5001;
         function loadChartWidget(tickerSymbol) {
-            document.getElementById('tv-chart-widget').innerHTML = `<iframe style="width:100%; height:100%; border:none; background:#131419;" src="https://tradingview.com{encodeURIComponent(tickerSymbol)}&frameElementId=tradingview_chart&interval=5&theme=dark&style=1&timezone=exchange"></iframe>`;
+            var url = "https://tradingview.com" + encodeURIComponent(tickerSymbol) + "&interval=5&theme=dark&style=1&timezone=exchange";
+            document.getElementById('tv-chart-widget').innerHTML = '<iframe style="width:100%; height:100%; border:none; background:#131419;" src="' + url + '"></iframe>';
         }
         window.onload = function() { loadChartWidget('BINANCE:BTCUSDT'); };
         function sw(sym,pr,lbl,tvSym){
