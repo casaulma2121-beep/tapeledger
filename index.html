@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TapeLedger</title>
+  
+  <!-- Gumroad Secure Checkout Overlay Script -->
+  <script src="https://gumroad.com"></script>
+  
+  <style>
+    :root {
+      --bg: #121214;
+      --card-bg: #1a1a1e;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #ff5a5f;
+      --accent-hover: #e0484d;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: var(--card-bg);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 440px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border: 1px solid #2a2a30;
+    }
+
+    .logo-container {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 10px 0;
+      letter-spacing: -0.5px;
+    }
+
+    .tagline {
+      color: var(--text-muted);
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 30px;
+    }
+
+    .features-list {
+      text-align: left;
+      margin: 0 auto 30px auto;
+      padding: 0;
+      list-style: none;
+      max-width: 320px;
+    }
+
+    .features-list li {
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+    }
+
+    .features-list li::before {
+      content: "✓";
+      color: var(--accent);
+      font-weight: bold;
+      margin-right: 10px;
+      font-size: 16px;
+    }
+
+    .gumroad-button {
+      display: block;
+      background-color: var(--accent);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      padding: 14px 28px;
+      border-radius: 8px;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      box-shadow: 0 4px 12px rgba(255, 90, 95, 0.2);
+    }
+
+    .gumroad-button:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .gumroad-button:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="logo-container">📼</div>
+    <h1>TapeLedger</h1>
+    <p class="tagline">The direct, transparent tool built precisely for your workflow needs. No subscriptions, no fluff.</p>
+    
+    <ul class="features-list">
+      <li>100% cloud-hosted deployment</li>
+      <li>Instant Gumroad checkout popup</li>
+      <li>Zero platform middleman fees</li>
+    </ul>
+    
+    <!-- CHANGE THE URL BELOW TO YOUR ACTUAL GUMROAD PRODUCT LINK -->
+    <a class="gumroad-button" href="https://gumroad.com">Buy TapeLedger Now</a>
+  </div>
+
+</body>
+</html>
