@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TapeLedger Workspace</title>
+  <style>
+    :root {
+      --bg-main: #0c0d10;
+      --bg-panel: #16181f;
+      --text-main: #f0f2f5;
+      --text-muted: #707584;
+      --buy-green: #00b074;
+      --sell-red: #ea3943;
+      --border-color: #262935;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      margin: 0;
+      padding: 24px;
+    }
+
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background-color: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    h2 {
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    /* Execution Control Module */
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      background: #000;
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 6px;
+      color: #fff;
+      font-weight: 600;
+      box-sizing: border-box;
+    }
+
+    .execution-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      padding: 14px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      color: white;
+      text-transform: uppercase;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover { opacity: 0.9; }
+    .btn-buy { background-color: var(--buy-green); }
+    .btn-sell { background-color: var(--sell-red); }
+
+    /* Data Presentation Layout */
+    .data-workspace {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      padding: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #1c1e26;
+      font-size: 14px;
+      font-family: monospace;
+    }
+
+    .green-text { color: var(--buy-green); font-weight: bold; }
+    .red-text { color: var(--sell-red); font-weight: bold; }
+    
+    .scroll-box {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    
+    <!-- Left Hand Command Deck -->
+    <div class="panel">
+      <h2>Execution Deck</h2>
+      <div class="input-group">
+        <label>Asset Ticker</label>
+        <input type="text" id="ticker" value="BTC/USDT">
+      </div>
+      <div class="input-group">
+        <label>Execution Price ($)</label>
+        <input type="number" id="price" value="98500">
+      </div>
+      <div class="input-group">
+        <label>Size / Volume</label>
+        <input type="number" id="volume" value="0.25" step="0.01">
+      </div>
+      
+      <div class="execution-btns">
+        <button class="btn btn-buy" onclick="logTrade('BUY')">Buy / Long</button>
+        <button class="btn btn-sell" onclick="logTrade('SELL')">Sell / Short</button>
+      </div>
+    </div>
+
+    <!-- Right Hand Matrix Screens -->
+    <div class="data-workspace">
+      
+      <!-- Live Printing Tape -->
+      <div class="panel">
+        <h2>Live Transaction Tape (Time & Sales)</h2>
+        <div class="scroll-box">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Ticker</th>
+                <th>Action</th>
+                <th>Price</th>
+                <th>Volume</th>
+              </tr>
+            </thead>
+            <tbody id="tape-body">
+              <!-- Live clicks print instantly here via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Master Ledger History -->
+      <div class="panel">
+        <h2>Account Master Ledger</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Asset</th>
+              <th>Type</th>
+              <th>Entry Basis</th>
+              <th>Position Volume</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-body">
+            <!-- Settled trades cataloged here -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let tradeCounter = 1001;
+
+    function logTrade(action) {
+      const ticker = document.getElementById('ticker').value.toUpperCase();
+      const price = parseFloat(document.getElementById('price').value).toLocaleString(undefined, {minimumFractionDigits: 2});
+      const volume = document.getElementById('volume').value;
+      const timestamp = new Date().toLocaleTimeString();
+      
+      const actionClass = (action === 'BUY') ? 'green-text' : 'red-text';
+
+      // 1. Flash print directly onto the Live Tape
+      const tapeBody = document.getElementById('tape-body');
+      const newTapeRow = `<tr>
+        <td>${timestamp}</td>
+        <td>${ticker}</td>
+        <td class="${actionClass}">${action}</td>
+        <td>$${price}</td>
+        <td>${volume}</td>
+      </tr>`;
+      tapeBody.insertAdjacentHTML('afterbegin', newTapeRow);
+
+      // 2. Commit permanently down into the Master Ledger log
+      const ledgerBody = document.getElementById('ledger-body');
+      const newLedgerRow = `<tr>
+        <td>#${tradeCounter++}</td>
+        <td>${ticker}</td>
+        <td class="${actionClass}">${action}</td>
+        <td>$${price}</td>
+        <td>${volume}</td>
+        <td><span style="background:#222; padding:3px 8px; border-radius:4px; font-size:11px;">EXECUTED</span></td>
+      </tr>`;
+      ledgerBody.insertAdjacentHTML('afterbegin', newLedgerRow);
+    }
+  </script>
+
+</body>
+</html>
