@@ -34,7 +34,7 @@
         td { padding: 8px 6px; border-bottom: 1px solid #1c1e26; font-size: 12px; font-family: monospace; color: #fff; }
         .scroll { max-height: 180px; overflow-y: auto; background: #0c0d10; border-radius: 4px; }
         .coach-card { background: var(--card); border: 1px solid #23263a; padding: 20px; border-radius: 8px; margin-bottom: 15px; }
-        .chart-placeholder { width: 100%; height: 320px; background: #090a0d; border: 1px dashed #23263a; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #616e88; flex-shrink: 0; }
+        canvas { background: #090a0d; border-radius: 6px; border: 1px solid #23263a; width: 100%; height: 320px; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -61,7 +61,8 @@
         <div class="grid tab-panel active" id="panel-radar">
             <div style="display:flex; gap:20px; width:100%; height:100%;">
                 <div class="chart-win">
-                    <div class="chart-placeholder">📊 Standalone Canvas Ready — Local Data Loop Enabled</div>
+                    <!-- REPLACED PLACEHOLDER TEXT WITH LIVE GRAPH CANVAS -->
+                    <canvas id="liveChart" width="600" height="320"></canvas>
                     <div>
                         <h4 style="margin:0 0 5px 0; font-size:12px; color:#616e88;">LIVE TRANSACTION TAPE</h4>
                         <div class="scroll"><table><thead><tr><th>Time</th><th>Asset</th><th>Action</th><th>Price</th><th>Size</th></tr></thead><tbody id="t-body"></tbody></table></div>
@@ -114,26 +115,31 @@
                 </div>
             </div>
         </div>
-    </div> <!-- Closes .main -->
+    </div>
 
-    <!-- SCRIPTS CONFIGURATION -->
+    <!-- UPDATED WINDOW-BOUND SCRIPTS -->
     <script>
-        let trades = [];
-        let tradeId = 1;
+        // Force functions directly onto the global window scope to ensure button execution
+        window.trades = [];
+        window.tradeId = 1;
+        
+        // Setup initial candle data structure
+        let candles = [];
+        for(let i=0; i<15; i++) {
+            let open = 96400 + (Math.random()*40 - 20);
+            candles.push({ o: open, h: open+25, l: open-25, c: open + (Math.random()*30 - 15) });
+        }
 
         window.onload = function() {
-            renderTables();
+            window.renderTables();
+            initChart();
         };
 
-        function switchTab(tabId) {
+        window.switchTab = function(tabId) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.getElementById('nav-' + tabId).classList.add('active');
             document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
             document.getElementById('panel-' + tabId).classList.add('active');
-        }
+        };
 
-        function sw(symbol, price, label) {
-            document.getElementById('c-as').value = symbol;
-            document.getElementById('e-pr').value = price;
-            document.getElementById('t-pr').innerText = '$' + price.toLocaleString(undefined, {minimumFractionDigits: 2});
-            document.getElementById('t-lbl').innerText = label;
+        window.sw = function(symbol, price, label) {
