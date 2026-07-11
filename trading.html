@@ -72,10 +72,10 @@
             </div>
             <div class="strat-side">
                 <div style="font-size:12px; font-weight:bold; color:var(--gold); margin-bottom:10px;">MACRO CONFIG</div>
-                <div class="group"><label>Asset</label><input type="text" id="c-as" value="BTCUSD" readonly></div>
-                <div class="group"><label>Price ($)</label><input type="number" id="e-pr" value="96420"></div>
-                <div class="group"><label>Volume</label><input type="number" id="e-sz" value="0.50" step="0.01"></div>
-                <div class="group"><label>Anchor</label><select id="m-an"><option>Bullish Expansion</option><option>Bearish Retracement</option></select></div>
+                <div class="group"><label for="c-as">Asset</label><input type="text" id="c-as" value="BTCUSD" readonly></div>
+                <div class="group"><label for="e-pr">Price ($)</label><input type="number" id="e-pr" value="96420"></div>
+                <div class="group"><label for="e-sz">Volume</label><input type="number" id="e-sz" value="0.50" step="0.01"></div>
+                <div class="group"><label for="m-an">Anchor</label><select id="m-an"><option>Bullish Expansion</option><option>Bearish Retracement</option></select></div>
                 <div class="exec-btns">
                     <button class="btn btn-buy" onclick="ex('BUY')">Buy</button>
                     <button class="btn btn-sell" onclick="ex('SELL')">Sell</button>
@@ -86,7 +86,6 @@
     <script>
         let id=5001;
         
-        // This initiates the chart via TradingView's script library
         function loadChartWidget(tickerSymbol) {
             if (typeof TradingView !== 'undefined') {
                 new TradingView.widget({
