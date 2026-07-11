@@ -32,7 +32,7 @@
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th { font-size: 11px; color: #616e88; padding: 6px; border-bottom: 1px solid #23263a; }
         td { padding: 8px 6px; border-bottom: 1px solid #1c1e26; font-size: 12px; font-family: monospace; color: #fff; }
-        .scroll { max-height: 280px; overflow-y: auto; background: #0c0d10; border-radius: 4px; }
+        .scroll { max-height: 180px; overflow-y: auto; background: #0c0d10; border-radius: 4px; }
         .coach-card { background: var(--card); border: 1px solid #23263a; padding: 20px; border-radius: 8px; margin-bottom: 15px; }
         .chart-placeholder { width: 100%; height: 320px; background: #090a0d; border: 1px dashed #23263a; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #616e88; flex-shrink: 0; }
     </style>
@@ -57,16 +57,13 @@
             </div>
         </div>
 
-        <!-- TAB 1: LIVE RADAR -->
         <div class="grid tab-panel active" id="panel-radar">
             <div style="display:flex; gap:20px; width:100%; height:100%;">
                 <div class="chart-win">
-                    <div class="chart-placeholder">
-                        📊 Standalone Canvas Ready — Local Data Loop Enabled
-                    </div>
+                    <div class="chart-placeholder">📊 Standalone Canvas Ready — Local Data Loop Enabled</div>
                     <div>
                         <h4 style="margin:0 0 5px 0; font-size:12px; color:#616e88;">LIVE TRANSACTION TAPE</h4>
-                        <div class="scroll" style="max-height: 180px;"><table><thead><tr><th>Time</th><th>Asset</th><th>Action</th><th>Price</th><th>Size</th></tr></thead><tbody id="t-body"></tbody></table></div>
+                        <div class="scroll"><table><thead><tr><th>Time</th><th>Asset</th><th>Action</th><th>Price</th><th>Size</th></tr></thead><tbody id="t-body"></tbody></table></div>
                     </div>
                 </div>
                 <div class="strat-side">
@@ -75,11 +72,9 @@
                     <div class="group"><label for="e-pr">Price ($)</label><input type="number" id="e-pr" value="96420"></div>
                     <div class="group"><label for="e-sz">Volume</label><input type="number" id="e-sz" value="0.50" step="0.01"></div>
                     <div class="group"><label for="m-an">Anchor</label><select id="m-an"><option>Bullish Expansion</option><option>Bearish Retracement</option></select></div>
-                    
-                    <div style="border-top: 1px solid #23263a; margin-top:10px; padding-top:10px; font-size:11px; font-weight:bold; color:var(--gold);">ADJUSTED EXPENSES</div>
+                    <div style="border-top:1px solid #23263a; margin-top:10px; padding-top:10px; font-size:11px; font-weight:bold; color:var(--gold);">ADJUSTED EXPENSES</div>
                     <div class="group" style="margin-top:5px;"><label for="fee-pct">Broker Fee (%)</label><input type="number" id="fee-pct" value="0.15" step="0.01"></div>
                     <div class="group"><label for="tax-pct">Manual Tax (%)</label><input type="number" id="tax-pct" value="20.00" step="0.5"></div>
-                    
                     <div class="exec-btns">
                         <button class="btn btn-buy" onclick="ex('BUY')">Buy</button>
                         <button class="btn btn-sell" onclick="ex('SELL')">Sell</button>
@@ -88,23 +83,14 @@
             </div>
         </div>
 
-        <!-- TAB 2: VAULT LEDGER -->
         <div class="grid tab-panel" id="panel-vault">
             <div class="chart-win" style="flex:1;">
                 <h3 style="margin:0; color:#fff;">Historical Vault Ledger</h3>
-                <p style="font-size:13px; color:#616e88; margin-top:5px;">Comprehensive structural accounting record including local tax weights and broker fee adjustments.</p>
+                <p style="font-size:13px; color:#616e88; margin-top:5px;">Comprehensive accounting record including fee adjustments.</p>
                 <div class="scroll" style="max-height:100%;">
                     <table>
                         <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Asset</th>
-                                <th>Type</th>
-                                <th>Raw Total</th>
-                                <th>Fees Paid</th>
-                                <th>Tax Multiplier</th>
-                                <th>Final Adjusted Total</th>
-                            </tr>
+                            <tr><th>ID</th><th>Asset</th><th>Type</th><th>Raw Total</th><th>Fees Paid</th><th>Tax %</th><th>Adjusted Total</th></tr>
                         </thead>
                         <tbody id="l-body"></tbody>
                     </table>
@@ -112,26 +98,35 @@
             </div>
         </div>
 
-        <!-- TAB 3: DISCIPLINE COACH -->
         <div class="grid tab-panel" id="panel-coach">
             <div class="chart-win" style="flex:1; overflow-y:auto;">
                 <h3 style="margin:0; color:#fff;">Psychology & Risk Management Guidelines</h3>
-                <p style="font-size:13px; color:#616e88; margin-top:5px;">Rigid rule frameworks to control variance and protect working account capital structures.</p>
-                
                 <div class="coach-card">
                     <h4 style="margin:0 0 10px 0; color:var(--gold);">🛡️ Capital Protection Rule (Max 1%)</h4>
-                    <p style="margin:0; font-size:13px; line-height:1.5;">Never allocate risk exposure exceeding 1% of total vault equity on a single execution script. If volume metrics violate this variance boundary, immediately scale down position limits.</p>
+                    <p style="margin:0; font-size:13px; line-height:1.5;">Never allocate risk exposure exceeding 1% of total vault equity on a single execution script.</p>
                 </div>
                 <div class="coach-card">
                     <h4 style="margin:0 0 10px 0; color:var(--red);">🛑 Circuit Breaker Variable</h4>
-                    <p style="margin:0; font-size:13px; line-height:1.5;">If your daily running track records hit two consecutive performance losses, lock down execution options immediately. Step away from the platform dashboard to preserve emotional and mental parity.</p>
+                    <p style="margin:0; font-size:13px; line-height:1.5;">If your daily track record hits two consecutive losses, lock down execution options immediately.</p>
                 </div>
             </div>
         </div>
-
     </div>
+
     <script>
         let id=5001;
-
         function switchTab(tabName) {
             document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const targetPanel = document.getElementById('panel-' + tabName);
+            const targetNav = document.getElementById('nav-' + tabName);
+            if(targetPanel) targetPanel.classList.add('active');
+            if(targetNav) targetNav.classList.add('active');
+        }
+        function sw(sym,pr,lbl){
+            const cAs = document.getElementById('c-as'), ePr = document.getElementById('e-pr');
+            const tPr = document.getElementById('t-pr'), tLbl = document.getElementById('t-lbl');
+            if(cAs) cAs.value = sym; if(ePr) ePr.value = pr;
+            if(tPr) tPr.innerText = "$" + pr.toLocaleString(); if(tLbl) tLbl.innerText = lbl;
+            document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active'));
+            if(sym==='XAUUSD') { const b = document.getElementById('b-gold'); if(b) b.classList.add('active'); }
