@@ -20,7 +20,11 @@
         .val { font-size: 18px; font-weight: bold; }
         .grid { display: flex; gap: 20px; flex: 1; min-height: 0; min-width: 750px; }
         .chart-win { flex: 2; background: #131419; border-radius: 8px; border: 1px solid #23263a; padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .chart-container { width: 100%; height: 300px; border-radius: 6px; overflow: hidden; background: #000; border: 1px solid #23263a; flex-shrink: 0; }
+        
+        /* Secure Container for the JavaScript Widget */
+        .tradingview-widget-container { width: 100%; height: 320px; border-radius: 6px; overflow: hidden; border: 1px solid #23263a; flex-shrink: 0; }
+        #tv-chart-widget { width: 100%; height: 100%; }
+
         .strat-side { width: 260px; background: var(--side); border-radius: 8px; border: 1px solid #23263a; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
         .group { margin-bottom: 12px; }
         label { display: block; font-size: 12px; margin-bottom: 6px; color: #fff; }
@@ -33,6 +37,8 @@
         td { padding: 8px 6px; border-bottom: 1px solid #1c1e26; font-size: 12px; font-family: monospace; color: #fff; }
         .scroll { max-height: 120px; overflow-y: auto; background: #0c0d10; border-radius: 4px; }
     </style>
+    <!-- Load the official TradingView Widget Library once -->
+    <script type="text/javascript" src="https://tradingview.com"></script>
 </head>
 <body>
     <div class="sidebar">
@@ -55,9 +61,9 @@
         </div>
         <div class="grid">
             <div class="chart-win">
-                <!-- Embedded Live Charting Display Engine -->
-                <div class="chart-container">
-                    <iframe id="tv-chart" style="width:100%; height:100%; border:none;" src="https://tradingview.com"></iframe>
+                <!-- TradingView Secure JavaScript Widget Mounting Box -->
+                <div class="tradingview-widget-container">
+                    <div id="tv-chart-widget"></div>
                 </div>
                 <div>
                     <h4 style="margin:0 0 5px 0; font-size:12px; color:#616e88;">LIVE TRANSACTION TAPE</h4>
@@ -83,6 +89,30 @@
     </div>
     <script>
         let id=5001;
+        let currentChartWidget = null;
+
+        // Initialize the first chart on load safely
+        window.onload = function() {
+            loadChartWidget('BINANCE:BTCUSDT');
+        };
+
+        function loadChartWidget(tickerSymbol) {
+            currentChartWidget = new TradingView.widget({
+                "width": "100%",
+                "height": "100%",
+                "symbol": tickerSymbol,
+                "interval": "5",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "en",
+                "enable_publishing": false,
+                "hide_side_toolbar": true,
+                "allow_symbol_change": false,
+                "container_id": "tv-chart-widget"
+            });
+        }
+
         function sw(sym,pr,lbl,tvSym){
             document.getElementById('c-as').value=sym; document.getElementById('e-pr').value=pr;
             document.getElementById('t-pr').innerText="$"+pr.toLocaleString(); document.getElementById('t-lbl').innerText=lbl;
@@ -90,8 +120,9 @@
             if(sym==='XAUUSD')document.getElementById('b-gold').classList.add('active');
             else if(sym==='BTCUSD')document.getElementById('b-btc').classList.add('active');
             else document.getElementById('b-oil').classList.add('active');
-            // Swap chart feed instantly
-            document.getElementById('tv-chart').src = `https://tradingview.com{encodeURIComponent(tvSym)}&interval=5&theme=dark&style=1&timezone=Exchange`;
+            
+            // Re-mount the secure script container with the new target asset feed
+            loadChartWidget(tvSym);
         }
         function ex(act){
             const as=document.getElementById('c-as').value, pr=parseFloat(document.getElementById('e-pr').value).toLocaleString(), sz=document.getElementById('e-sz').value, an=document.getElementById('m-an').value, tm=new Date().toLocaleTimeString(), cl=act==='BUY'?'style="color:#26c281;font-weight:bold;"':'style="color:#ff4d4d;font-weight:bold;"';
