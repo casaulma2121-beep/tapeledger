@@ -59,10 +59,10 @@
                             const b4 = document.getElementById('bar-4');
                             
                             if (title) title.textContent = document.getElementById('c-as').value + " (Canvas Engine Stream)";
-                            if(b1 && data) b1.style.height = (data[0]?.close || 55) + '%';
-                            if(b2 && data) b2.style.height = (data[1]?.close || 75) + '%';
-                            if(b3 && data) b3.style.height = (data[2]?.close || 40) + '%';
-                            if(b4 && data) b4.style.height = (data[3]?.close || 90) + '%';
+                            if(b1 && data) b1.style.height = (data?.close || 55) + '%';
+                            if(b2 && data) b2.style.height = (data?.close || 75) + '%';
+                            if(b3 && data) b3.style.height = (data?.close || 40) + '%';
+                            if(b4 && data) b4.style.height = (data?.close || 90) + '%';
                         }
                     };
                 },
@@ -212,6 +212,7 @@
             border: 1px solid var(--border);
             padding: 20px;
             height: 400px;
+            box-sizing: border-box;
         }
 
         #chart-canvas {
@@ -300,6 +301,3 @@
             font-size: 14px;
             cursor: pointer;
             color: white;
-            transition: opacity 0.15s ease;
-        }
-
