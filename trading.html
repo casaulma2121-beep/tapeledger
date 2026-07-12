@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +7,9 @@
     
     <!-- Bulletproof favicon preventative tag -->
     <link rel="icon" href="data:,">
+
+    <!-- CRITICAL LINK: Connects your patch.js script layout engine directly -->
+    <script src="patch.js"></script>
 
     <style>
         :root {
@@ -246,7 +249,7 @@
         .btn-buy { background-color: var(--accent-green); color: #0c0d12; font-weight: 800; }
         .btn-sell { background-color: var(--accent-red); color: #0c0d12; font-weight: 800; }
         
-        /* Layout screen state panels togglers */
+        /* Layout utility styles */
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
     </style>
@@ -254,7 +257,7 @@
 <body>
 
     <div class="dashboard-container">
-        <!-- Left Sidebar Navigation Menu Grid -->
+        <!-- Sidebar Navigation -->
         <div class="sidebar-left">
             <div class="sidebar-brand">TapeLedger</div>
             <div class="nav-links">
@@ -264,10 +267,10 @@
             </div>
         </div>
 
-        <!-- Central Workspace Node Stack Area -->
+        <!-- Central Column Panels Wrapper -->
         <div class="workspace-center">
             
-            <!-- VIEWPORT MATRIX 1: LIVE RADAR CHANNEL CANVAS STACK -->
+            <!-- PANEL 1: LIVE RADAR INTERFACE -->
             <div id="panel-radar" class="tab-panel active">
                 <div class="top-navbar" style="margin-bottom: 20px;">
                     <div class="asset-tabs">
@@ -304,15 +307,14 @@
                             </tr>
                         </thead>
                         <tbody id="t-body">
-                            <!-- Click transactions stream straight inside here natively -->
+                            <!-- Populates dynamically via renderTables() -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- VIEWPORT MATRIX 2: VAULT ACCOUNT STATEMENTS ROWS -->
+            <!-- PANEL 2: VAULT BALANCE ACCOUNT STATEMENT REVIEWS -->
             <div id="panel-vault" class="tab-panel">
                 <div class="tape-wrapper" style="min-height: 500px;">
-                    <div style="font-size: 13px; color: var(--gold); font-weight: bold; margin-bottom: 15px;">💼 VAULT BALANCES LEDGER AUDITS RECORD</div>
+                    <div style="font-size: 13px; color: var(--gold); font-weight: bold; margin-bottom: 15px;">💼 VAULT STATEMENT BALANCES AUDITING</div>
                     <table class="tape-table">
-                        <thead>
