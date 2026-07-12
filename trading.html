@@ -7,9 +7,6 @@
     
     <!-- Bulletproof offline favicon crash preventative bypass tag -->
     <link rel="icon" href="data:,">
-    
-    <!-- Include the official production charting library engine directly -->
-    <script src="https://cloudflare.com"></script>
 
     <style>
         :root {
@@ -247,6 +244,10 @@
 
         .btn-buy { background-color: var(--accent-green); color: #0c0d12; font-weight: 800; }
         .btn-sell { background-color: var(--accent-red); color: #0c0d12; font-weight: 800; }
+        
+        /* Tab panel utility selectors */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
     </style>
 </head>
 <body>
@@ -255,74 +256,62 @@
         <div class="sidebar-left">
             <div class="sidebar-brand">TapeLedger</div>
             <div class="nav-links">
-                <button class="nav-item active" id="nav-radar">Live Radar</button>
-                <button class="nav-item" id="nav-vault">Vault Ledger</button>
-                <button class="nav-item" id="nav-coach">Discipline Coach</button>
+                <button class="nav-item active" id="nav-radar" onclick="window.switchTab('radar')">Live Radar</button>
+                <button class="nav-item" id="nav-vault" onclick="window.switchTab('vault')">Vault Ledger</button>
+                <button class="nav-item" id="nav-coach" onclick="window.switchTab('coach')">Discipline Coach</button>
             </div>
         </div>
 
+        <!-- Central Column: Toggled layout panels managed by switchTab -->
         <div class="workspace-center">
-            <div class="top-navbar">
-                <div class="asset-tabs">
-                    <button class="tab-btn" id="tab-XAUUSD">XAUUSD</button>
-                    <button class="tab-btn active" id="tab-BTCUSD">BTCUSD</button>
-                    <button class="tab-btn" id="tab-USOUSD">USOUSD</button>
-                </div>
-                <div class="stat-display-group">
-                    <div class="stat-val-box">
-                        <div class="stat-lbl">Active Index</div>
-                        <div class="stat-num" id="header-price-display" style="color: var(--gold);">$96,420.00</div>
-                    </div>
-                    <div class="stat-val-box">
-                        <div class="stat-lbl">Win Ratio</div>
-                        <div class="stat-num" style="color: var(--accent-green);">100%</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="chart-wrapper">
-                <div id="chart-canvas"></div>
-            </div>
             
-            <div class="tape-wrapper">
-                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: bold;">Live Transaction Tape</div>
-                <table class="tape-table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Asset</th>
-                            <th>Action</th>
-                            <th>Price</th>
-                            <th>Size</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tape-rows">
-                        <!-- Dynamic lines attach natively here -->
-                    </tbody>
-                </table>
+            <!-- PANEL 1: LIVE RADAR INTERFACE workspace canvas -->
+            <div id="panel-radar" class="tab-panel active">
+                <div class="top-navbar" style="margin-bottom: 20px;">
+                    <div class="asset-tabs">
+                        <button class="tab-btn" id="b-gold" onclick="window.sw('XAUUSD', 2150.40, 'Gold Spot')">XAUUSD</button>
+                        <button class="tab-btn active" id="b-btc" onclick="window.sw('BTCUSD', 96420.00, 'Bitcoin Index')">BTCUSD</button>
+                        <button class="tab-btn" id="b-oil" onclick="window.sw('USOUSD', 78.25, 'Crude Oil')">USOUSD</button>
+                    </div>
+                    <div class="stat-display-group">
+                        <div class="stat-val-box">
+                            <div class="stat-lbl" id="t-lbl">Bitcoin Index</div>
+                            <div class="stat-num" id="t-pr" style="color: var(--gold);">$96,420.00</div>
+                        </div>
+                        <div class="stat-val-box">
+                            <div class="stat-lbl">Win Ratio</div>
+                            <div class="stat-num" style="color: var(--accent-green);">100%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-wrapper" style="margin-bottom: 20px;">
+                    <div id="chart-canvas"></div>
+                </div>
+                
+                <div class="tape-wrapper">
+                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: bold;">Live Transaction Tape</div>
+                    <table class="tape-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Asset</th>
+                                <th>Action</th>
+                                <th>Price</th>
+                                <th>Size</th>
+                            </tr>
+                        </thead>
+                        <tbody id="t-body">
+                            <!-- Live tape logs map directly here via renderTables() -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        <div class="strat-side">
-            <div>
-                <div style="font-size:12px; font-weight:bold; color:var(--gold); margin-bottom:15px;">MACRO CONFIG</div>
-                <div class="group">
-                    <label for="c-as">Asset</label>
-                    <input type="text" id="c-as" value="BTCUSD" readonly>
-                </div>
-                <div class="group">
-                    <label for="e-pr">Price ($)</label>
-                    <input type="number" id="e-pr" value="96420">
-                </div>
-                <div class="group">
-                    <label for="e-sz">Volume</label>
-                    <input type="number" id="e-sz" step="0.0001" value="0.5088">
-                </div>
-                <div class="group">
-                    <label for="m-an">Anchor</label>
-                    <select id="m-an">
-                        <option>Bullish Expansion</option>
-                        <option>Bearish Retracement</option>
-                    </select>
-                </div>
-
+            <!-- PANEL 2: VAULT LEDGER HISTORICAL AUDIT LOG PANEL -->
+            <div id="panel-vault" class="tab-panel">
+                <div class="tape-wrapper" style="min-height: 500px;">
+                    <div style="font-size: 14px; color: var(--gold); font-weight: bold; margin-bottom: 15px;">💼 VAULT ACCOUNT STATEMENT RECORD AUDITS</div>
+                    <table class="tape-table">
+                        <thead>
+                            <tr>
