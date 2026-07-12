@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TapeLedger - Advanced Trading Canvas</title>
     
-    <!-- Bulletproof offline favicon crash preventative bypass tag -->
+    <!-- Bulletproof favicon preventative tag -->
     <link rel="icon" href="data:,">
 
     <style>
@@ -75,6 +75,7 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s;
+            width: 100%;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -245,7 +246,7 @@
         .btn-buy { background-color: var(--accent-green); color: #0c0d12; font-weight: 800; }
         .btn-sell { background-color: var(--accent-red); color: #0c0d12; font-weight: 800; }
         
-        /* Tab panel utility selectors */
+        /* Layout screen state panels togglers */
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
     </style>
@@ -253,6 +254,7 @@
 <body>
 
     <div class="dashboard-container">
+        <!-- Left Sidebar Navigation Menu Grid -->
         <div class="sidebar-left">
             <div class="sidebar-brand">TapeLedger</div>
             <div class="nav-links">
@@ -262,10 +264,10 @@
             </div>
         </div>
 
-        <!-- Central Column: Toggled layout panels managed by switchTab -->
+        <!-- Central Workspace Node Stack Area -->
         <div class="workspace-center">
             
-            <!-- PANEL 1: LIVE RADAR INTERFACE workspace canvas -->
+            <!-- VIEWPORT MATRIX 1: LIVE RADAR CHANNEL CANVAS STACK -->
             <div id="panel-radar" class="tab-panel active">
                 <div class="top-navbar" style="margin-bottom: 20px;">
                     <div class="asset-tabs">
@@ -302,16 +304,15 @@
                             </tr>
                         </thead>
                         <tbody id="t-body">
-                            <!-- Live tape logs map directly here via renderTables() -->
+                            <!-- Click transactions stream straight inside here natively -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- PANEL 2: VAULT LEDGER HISTORICAL AUDIT LOG PANEL -->
+            <!-- VIEWPORT MATRIX 2: VAULT ACCOUNT STATEMENTS ROWS -->
             <div id="panel-vault" class="tab-panel">
                 <div class="tape-wrapper" style="min-height: 500px;">
-                    <div style="font-size: 14px; color: var(--gold); font-weight: bold; margin-bottom: 15px;">💼 VAULT ACCOUNT STATEMENT RECORD AUDITS</div>
+                    <div style="font-size: 13px; color: var(--gold); font-weight: bold; margin-bottom: 15px;">💼 VAULT BALANCES LEDGER AUDITS RECORD</div>
                     <table class="tape-table">
                         <thead>
-                            <tr>
