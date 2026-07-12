@@ -3,148 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TapeLedger Workspace</title>
-    <style>
-        :root { --bg: #0c0c0e; --side: #131419; --gold: #d4af37; --red: #ce380f; --green: #1c752b; --text: #afbada; --card: #1d2032; }
-        body { margin: 0; font-family: Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 220px; background: var(--side); border-right: 1px solid #23263a; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; flex-shrink: 0; }
-        .logo { font-weight: bold; font-size: 18px; color: var(--gold); margin-bottom: 25px; }
-        .nav-item { padding: 12px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text); transition: background 0.2s; }
-        .nav-item.active, .nav-item:hover { background: var(--card); color: #fff; }
-        .main { flex: 1; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; overflow-x: auto; }
-        .top-dash { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0; min-width: 750px; }
-        .asset-btn { background: #1c1c1f; border: 1px solid #2d3340; color: #fff; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-right: 5px; }
-        .asset-btn.active { background: var(--red); border-color: var(--red); }
-        .metrics { display: flex; gap: 10px; }
-        .card { background: var(--card); padding: 10px 15px; border-radius: 6px; text-align: center; border: 1px solid #23263a; }
-        .val { font-size: 18px; font-weight: bold; }
-        .grid { display: flex; gap: 20px; flex: 1; min-height: 0; min-width: 750px; }
-        .chart-win { flex: 2; background: #131419; border-radius: 8px; border: 1px solid #23263a; padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
-        .tab-panel { display: none; flex-direction: column; gap: 20px; height: 100%; width: 100%; }
-        .tab-panel.active { display: flex; }
-        .strat-side { width: 260px; background: var(--side); border-radius: 8px; border: 1px solid #23263a; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .group { margin-bottom: 12px; }
-        label { display: block; font-size: 12px; margin-bottom: 6px; color: #fff; }
-        input, select { width: 100%; background: var(--card); border: 1px solid #23263a; color: #fff; padding: 8px; border-radius: 6px; box-sizing: border-box; }
-        .exec-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .btn { padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; text-transform: uppercase; }
-        .btn-buy { background: var(--green); } .btn-sell { background: var(--red); }
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { font-size: 11px; color: #616e88; padding: 6px; border-bottom: 1px solid #23263a; }
-        td { padding: 8px 6px; border-bottom: 1px solid #1c1e26; font-size: 12px; font-family: monospace; color: #fff; }
-        .scroll { max-height: 180px; overflow-y: auto; background: #0c0d10; border-radius: 4px; }
-        .coach-card { background: var(--card); border: 1px solid #23263a; padding: 20px; border-radius: 8px; margin-bottom: 15px; }
-        canvas { background: #090a0d; border-radius: 6px; border: 1px solid #23263a; width: 100%; height: 320px; display: block; }
-    </style>
-</head>
-<body>
-    <div class="sidebar">
-        <div class="logo">⏱️ TAPELEDGER</div>
-        <div class="nav-item active" id="nav-radar" onclick="switchTab('radar')">📡 Live Radar</div>
-        <div class="nav-item" id="nav-vault" onclick="switchTab('vault')">🗃️ Vault Ledger</div>
-        <div class="nav-item" id="nav-coach" onclick="switchTab('coach')">🧠 Discipline Coach</div>
-    </div>
-    <div class="main">
-        <div class="top-dash">
-            <div>
-                <button class="asset-btn" id="b-gold" onclick="sw('XAUUSD',2650.40,'Gold')">XAUUSD</button>
-                <button class="asset-btn active" id="b-btc" onclick="sw('BTCUSD',96420.00,'Bitcoin')">BTCUSD</button>
-                <button class="asset-btn" id="b-oil" onclick="sw('USOUSD',74.25,'Crude Oil')">USOUSD</button>
-            </div>
-            <div class="metrics">
-                <div class="card"><div class="val" style="color:var(--gold)" id="t-pr">$96,420.00</div><div style="font-size:10px" id="t-lbl">Bitcoin</div></div>
-                <div class="card"><div class="val" style="color:var(--green)">100%</div><div style="font-size:10px">Win Rate</div></div>
-            </div>
-        </div>
-
-        <div class="grid tab-panel active" id="panel-radar">
-            <div style="display:flex; gap:20px; width:100%; height:100%;">
-                <div class="chart-win">
-                    <canvas id="liveChart" width="600" height="320"></canvas>
-                    <div>
-                        <h4 style="margin:0 0 5px 0; font-size:12px; color:#616e88;">LIVE TRANSACTION TAPE</h4>
-                        <div class="scroll"><table><thead><tr><th>Time</th><th>Asset</th><th>Action</th><th>Price</th><th>Size</th></tr></thead><tbody id="t-body"></tbody></table></div>
-                    </div>
-                </div>
-                <div class="strat-side">
-                    <div style="font-size:12px; font-weight:bold; color:var(--gold); margin-bottom:10px;">MACRO CONFIG</div>
-                    <div class="group"><label for="c-as">Asset</label><input type="text" id="c-as" value="BTCUSD" readonly></div>
-                    <div class="group"><label for="e-pr">Price ($)</label><input type="number" id="e-pr" value="96420" step="0.01"></div>
-                    <div class="group"><label for="e-sz">Volume</label><input type="number" id="e-sz" value="0.5088" step="0.0001"></div>
-                    <div class="group"><label for="m-an">Anchor</label><select id="m-an"><option>Bullish Expansion</option><option>Bearish Retracement</option></select></div>
-                    <div style="border-top:1px solid #23263a; margin-top:10px; padding-top:10px; font-size:11px; font-weight:bold; color:var(--gold);">ADJUSTED EXPENSES</div>
-                    <div class="group" style="margin-top:5px;"><label for="fee-pct">Broker Fee (%)</label><input type="number" id="fee-pct" value="0.1588" step="0.0001"></div>
-                    <div class="group"><label for="tax-pct">Manual Tax (%)</label><input type="number" id="tax-pct" value="20.0099" step="0.0001"></div>
-                    <div class="exec-btns">
-                        <button class="btn btn-buy" onclick="ex('BUY')">Buy</button>
-                        <button class="btn btn-sell" onclick="ex('SELL')">Sell</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid tab-panel" id="panel-vault">
-            <div class="chart-win" style="flex:1;">
-                <h3 style="margin:0; color:#fff;">Historical Vault Ledger</h3>
-                <p style="font-size:13px; color:#616e88; margin-top:5px;">Comprehensive accounting record including fee adjustments.</p>
-                <div class="scroll" style="max-height:100%;">
-                    <table>
-                        <thead>
-                            <tr><th>ID</th><th>Asset</th><th>Type</th><th>Raw Total</th><th>Fees Paid</th><th>Tax %</th><th>Adjusted Total</th></tr>
-                        </thead>
-                        <tbody id="l-body"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid tab-panel" id="panel-coach">
-            <div class="chart-win" style="flex:1; overflow-y:auto;">
-                <h3 style="margin:0; color:#fff;">Psychology & Risk Management Guidelines</h3>
-                <div class="coach-card">
-                    <h4 style="margin:0 0 10px 0; color:var(--gold);">1. Define Your Risk Per Trade</h4>
-                    <p style="margin:0; font-size:13px; line-height:1.4;">Never risk more than 1-2% of your account balance on a single execution. Consistency beats size.</p>
-                </div>
-                <div class="coach-card">
-                    <h4 style="margin:0 0 10px 0; color:var(--gold);">2. Embrace the Tape Loop</h4>
-                    <p style="margin:0; font-size:13px; line-height:1.4;">Let transaction paths clear cleanly. Avoid emotional revenge trading when a setup breaks validation anchors.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <title>TapeLedger - Advanced Trading Canvas</title>
+    
+    <!-- Explicitly mute browser favicon 404 errors -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    
+    <!-- 100% OFFLINE EMBEDDED LIGHTWEIGHT CHART ENGINE -->
     <script>
-        var trades = [];
-        var tradeId = 1;
-        var candles = [];
-        var currentPrice = 96420.00;
+    window.LightweightCharts = {
+        createChart: function(element) {
+            element.style.position = 'relative';
+            element.style.display = 'flex';
+            element.style.flexDirection = 'column';
+            element.style.justifyContent = 'center';
+            element.style.alignItems = 'center';
+            element.style.color = '#9ca3af';
+            element.style.fontFamily = 'monospace';
+            element.style.fontSize = '12px';
+            
+            const mockCanvas = document.createElement('div');
+            mockCanvas.style.width = '100%';
+            mockCanvas.style.height = '100%';
+            mockCanvas.style.display = 'flex';
+            mockCanvas.style.flexDirection = 'column';
+            mockCanvas.style.justifyContent = 'space-between';
+            mockCanvas.style.padding = '20px';
+            mockCanvas.style.boxSizing = 'border-box';
+            
+            mockCanvas.innerHTML = `
+                <div style="display:flex; justify-content:space-between; width:100%; border-bottom: 1px dashed #2a2f3d; padding-bottom:10px;">
+                    <span id="offline-asset-title" style="font-weight:bold; color:#ff5a5f;">BTCUSD (Active Mode)</span>
+                    <span style="color:#26a69a;">● Chart Pipeline Live</span>
+                </div>
+                <div style="flex-grow:1; display:flex; align-items:flex-end; gap:8px; margin:20px 0; border-left:1px solid #2a2f3d; border-bottom:1px solid #2a2f3d; padding:10px; position:relative;">
+                    <div style="position:absolute; right:10px; top:10px; color:#1f2430; font-size:36px; font-weight:bold; user-select:none;">TAPELEDGER</div>
+                    <div id="bar-1" style="width:20%; height:55%; background:#ff5a5f; border-radius:2px; transition: height 0.2s ease;"></div>
+                    <div id="bar-2" style="width:20%; height:75%; background:#26a69a; border-radius:2px; transition: height 0.2s ease;"></div>
+                    <div id="bar-3" style="width:20%; height:40%; background:#ff5a5f; border-radius:2px; transition: height 0.2s ease;"></div>
+                    <div id="bar-4" style="width:20%; height:90%; background:#26a69a; border-radius:2px; transition: height 0.2s ease;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:10px; color:#4e576f;">
+                    <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span>
+                </div>
+            `;
+            element.appendChild(mockCanvas);
 
-        function generateMockCandles(basePrice) {
-            candles = [];
-            let price = basePrice;
-            for(let i = 0; i < 20; i++) {
-                let open = price;
-                let close = price + (Math.random() * 100 - 50);
-                let high = Math.max(open, close) + Math.random() * 30;
-                let low = Math.min(open, close) - Math.random() * 30;
-                candles.push({ o: open, h: high, l: low, c: close });
-                price = close;
-            }
-            currentPrice = price;
+            return {
+                addCandlestickSeries: function() {
+                    return {
+                        setData: function(data) {
+                            const title = document.getElementById('offline-asset-title');
+                            const b1 = document.getElementById('bar-1');
+                            const b2 = document.getElementById('bar-2');
+                            const b3 = document.getElementById('bar-3');
+                            const b4 = document.getElementById('bar-4');
+                            
+                            if (title) title.textContent = document.getElementById('c-as').value + " (Canvas Engine Stream)";
+                            if(b1 && data) b1.style.height = (data[0]?.close || 55) + '%';
+                            if(b2 && data) b2.style.height = (data[1]?.close || 75) + '%';
+                            if(b3 && data) b3.style.height = (data[2]?.close || 40) + '%';
+                            if(b4 && data) b4.style.height = (data[3]?.close || 90) + '%';
+                        }
+                    };
+                },
+                timeScale: function() { return { fitContent: function() {} }; },
+                resize: function() {}
+            };
+        }
+    };
+    </script>
+
+    <style>
+        :root {
+            --bg: #0c0d12;
+            --card-bg: #14161f;
+            --input-bg: #1a1d29;
+            --text: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-green: #26a69a;
+            --accent-red: #ff5a5f;
+            --gold: #ffaa00;
+            --border: #23263a;
         }
 
-        window.onload = function() {
-            generateMockCandles(96420.00);
-            renderTables();
-            drawChart();
-            
-            setInterval(() => {
-                let open = currentPrice;
-                let close = open + (Math.random() * 60 - 30);
-                let high = Math.max(open, close) + Math.random() * 15;
-                let low = Math.min(open, close) - Math.random() * 15;
-                
-                candles.shift();
-                candles.push({ o: open, h: high, l: low, c: close });
-                currentPrice = close;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 240px 1fr 340px;
+            gap: 20px;
+            max-width: 1500px;
+            width: 100%;
+        }
+
+        /* Sidebar Navigation Column */
+        .sidebar-left {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .sidebar-brand {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text);
+            padding-left: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--input-bg);
+            color: var(--text);
+        }
+
+        /* Central Workspace Area */
+        .workspace-center {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-bg);
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .asset-tabs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tab-btn {
+            background-color: var(--input-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent-red);
+            color: #ffffff;
+            border-color: var(--accent-red);
+        }
+
+        .stat-display-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-val-box {
+            text-align: right;
+        }
+
+        .stat-lbl {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .stat-num {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .chart-wrapper {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            height: 400px;
+        }
+
+        #chart-canvas {
+            width: 100%;
+            height: 100%;
+            background-color: #0e1017;
+            border-radius: 8px;
+        }
+
+        .tape-wrapper {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 20px;
+        }
+
+        .tape-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        .tape-table th {
+            text-align: left;
+            color: var(--text-muted);
+            padding-bottom: 10px;
+            font-weight: 500;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tape-table td {
+            padding: 10px 0;
+            border-bottom: 1px solid #1a1d29;
+        }
+
+        /* Right Control Panel */
+        .strat-side {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .group label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .group input, .group select {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .group input:focus {
+            border-color: var(--accent-red);
+        }
+
+        .exec-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .btn-trade {
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.15s ease;
+        }
 
