@@ -255,18 +255,18 @@
         <div class="sidebar-left">
             <div class="sidebar-brand">TapeLedger</div>
             <div class="nav-links">
-                <button class="nav-item active" onclick="window.switchTab('radar')">Live Radar</button>
-                <button class="nav-item" onclick="window.switchTab('vault')">Vault Ledger</button>
-                <button class="nav-item" onclick="window.switchTab('coach')">Discipline Coach</button>
+                <button class="nav-item active" id="nav-radar">Live Radar</button>
+                <button class="nav-item" id="nav-vault">Vault Ledger</button>
+                <button class="nav-item" id="nav-coach">Discipline Coach</button>
             </div>
         </div>
 
         <div class="workspace-center">
             <div class="top-navbar">
                 <div class="asset-tabs">
-                    <button class="tab-btn" id="tab-XAUUSD" onclick="window.sw('XAUUSD')">XAUUSD</button>
-                    <button class="tab-btn active" id="tab-BTCUSD" onclick="window.sw('BTCUSD')">BTCUSD</button>
-                    <button class="tab-btn" id="tab-USOUSD" onclick="window.sw('USOUSD')">USOUSD</button>
+                    <button class="tab-btn" id="tab-XAUUSD">XAUUSD</button>
+                    <button class="tab-btn active" id="tab-BTCUSD">BTCUSD</button>
+                    <button class="tab-btn" id="tab-USOUSD">USOUSD</button>
                 </div>
                 <div class="stat-display-group">
                     <div class="stat-val-box">
@@ -297,7 +297,7 @@
                         </tr>
                     </thead>
                     <tbody id="tape-rows">
-                        <!-- User orders append here natively -->
+                        <!-- Dynamic lines attach natively here -->
                     </tbody>
                 </table>
             </div>
@@ -322,3 +322,7 @@
                     <label for="m-an">Anchor</label>
                     <select id="m-an">
                         <option>Bullish Expansion</option>
+                        <option>Bearish Retracement</option>
+                    </select>
+                </div>
+
