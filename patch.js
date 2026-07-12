@@ -1,4 +1,8 @@
-window.trades = []; window.tradeId = 1;
+ window.trades = [];
+window.tradeId = 1;
+
+// Global tracking structure for our live network data feed
+window.activeWsConnection = null;
 
 window.switchTab = function(tabId) {
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -7,15 +11,24 @@ window.switchTab = function(tabId) {
     document.getElementById('panel-' + tabId).classList.add('active');
 };
 
-window.sw = function(symbol, price, label) {
+window.sw = function(symbol, fallbackPrice, label) {
     document.getElementById('c-as').value = symbol;
-    document.getElementById('e-pr').value = price;
-    document.getElementById('t-pr').innerText = '$' + price.toLocaleString(undefined, {minimumFractionDigits: 2});
+    document.getElementById('e-pr').value = fallbackPrice;
+    document.getElementById('t-pr').innerText = '$' + fallbackPrice.toLocaleString(undefined, {minimumFractionDigits: 2});
     document.getElementById('t-lbl').innerText = label;
     document.querySelectorAll('.asset-btn').forEach(btn => btn.classList.remove('active'));
-    if(symbol === 'XAUUSD') document.getElementById('b-gold').classList.add('active');
-    if(symbol === 'BTCUSD') document.getElementById('b-btc').classList.add('active');
-    if(symbol === 'USOUSD') document.getElementById('b-oil').classList.add('active');
+    
+    // Toggle design highlight markers safely matching elements
+    const goldBtn = document.getElementById('b-gold');
+    const btcBtn = document.getElementById('b-btc');
+    const oilBtn = document.getElementById('b-oil');
+    
+    if(symbol === 'XAUUSD' && goldBtn) goldBtn.classList.add('active');
+    if(symbol === 'BTCUSD' && btcBtn) btcBtn.classList.add('active');
+    if(symbol === 'USOUSD' && oilBtn) oilBtn.classList.add('active');
+
+    // Instantly recalibrate our network data thread to stream the newly selected asset
+    window.connectLivePriceFeed(symbol);
 };
 
 window.ex = function(actionType) {
@@ -67,4 +80,52 @@ window.renderTables = function() {
     });
 };
 
-console.log("ENGINE OVERRIDE ACTIVE");
+// NEW LOGIC MODULE: Manages direct streaming network data connections
+window.connectLivePriceFeed = function(symbol) {
+    // If a network connection is already running from a previous tab, close it clean first
+    if (window.activeWsConnection) {
+        window.activeWsConnection.close();
+    }
+
+    // Convert internal database asset markers to matching public streaming targets
+    let streamTicker = "btcusdt"; // Default
+    if (symbol === "XAUUSD") streamTicker = "paxgusdt"; // Streams PAX Gold (token backed 1:1 by real gold bullion bars)
+    if (symbol === "USOUSD") streamTicker = "wtiusdt";  // Streams Crude Oil proxy tracks
+
+    console.log(`Piping live market data via channel: wss://://binance.com{streamTicker}@ticker`);
+    
+    // Boot open the raw binary streaming connection pipeline directly to the server infrastructure
+    window.activeWsConnection = new WebSocket(`wss://://binance.com{streamTicker}@ticker`);
+
+    // Parse streaming data frames immediately as they clear the pipeline wire
+    window.activeWsConnection.onmessage = function(event) {
+        const marketData = JSON.parse(event.data);
+        const livePrice = parseFloat(marketData.c); // 'c' represents the true latest close price index tick
+        
+        if (!isNaN(livePrice)) {
+            // Update the form numbers so your BUY/SELL calculations use the live price instantly
+            const priceInput = document.getElementById('e-pr');
+            if (priceInput) priceInput.value = livePrice.toFixed(2);
+
+            // Update your dashboard's large gold top-right metrics title indicator banner text
+            const priceHeader = document.getElementById('t-pr');
+            if (priceHeader) {
+                priceHeader.innerText = '$' + livePrice.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+        }
+    };
+
+    window.activeWsConnection.onerror = function(err) {
+        console.error("Live streaming connection network state warning caught: ", err);
+    };
+};
+
+// Auto-boot your streaming ticker channel system as soon as the file drops into memory
+document.addEventListener("DOMContentLoaded", function() {
+    window.connectLivePriceFeed("BTCUSD");
+});
+
+console.log("ENGINE OVERRIDE ACTIVE - LIVE WEBSOCKET DATA STREAM CHANNELS MOUNTED");
