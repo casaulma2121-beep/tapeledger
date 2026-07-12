@@ -1,8 +1,8 @@
 window.trades = [];
 window.tradeId = 1;
 
-// Global tracking structure for our live network data feed
-window.activeWsConnection = null;
+// Global tracking structure for our live loop interval timer
+window.livePriceTimer = null;
 
 window.switchTab = function(tabId) {
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -15,10 +15,9 @@ window.switchTab = function(tabId) {
 };
 
 window.sw = function(symbol, fallbackPrice, label) {
-    // Universal scanners to find your input fields even if IDs are slightly different
-    const assetInput = document.getElementById('c-as') || document.getElementById('input-asset') || document.querySelector('input[readonly]');
-    const priceInput = document.getElementById('e-pr') || document.getElementById('input-price') || document.querySelector('input[type="number"]');
-    const priceHeader = document.getElementById('t-pr') || document.getElementById('header-price-display') || document.querySelector('.stat-num');
+    const assetInput = document.getElementById('c-as') || document.getElementById('input-asset');
+    const priceInput = document.getElementById('e-pr') || document.getElementById('input-price');
+    const priceHeader = document.getElementById('t-pr') || document.getElementById('header-price-display');
     const labelHeader = document.getElementById('t-lbl') || document.querySelector('.stat-lbl');
 
     if (assetInput) assetInput.value = symbol;
@@ -32,8 +31,8 @@ window.sw = function(symbol, fallbackPrice, label) {
     if (symbol === 'BTCUSD') { const b = document.getElementById('b-btc') || document.getElementById('tab-BTCUSD'); if(b) b.classList.add('active'); }
     if (symbol === 'USOUSD') { const b = document.getElementById('b-oil') || document.getElementById('tab-USOUSD'); if(b) b.classList.add('active'); }
 
-    // Instantly recalibrate our network data thread to stream the newly selected asset
-    window.connectLivePriceFeed(symbol);
+    // Clear old timers and immediately start tracking the newly selected asset channel
+    window.startLivePriceFeed(symbol);
 };
 
 window.ex = function(actionType) {
@@ -94,35 +93,28 @@ window.renderTables = function() {
     });
 };
 
-// DIRECT PIPELINE TO PUBLIC SECURE STREAM CHANNELS
-window.connectLivePriceFeed = function(symbol) {
-    if (window.activeWsConnection) {
-        try {
-            window.activeWsConnection.close();
-        } catch(e) {}
+// RELIABLE METHOD: Uses direct fetch request commands to extract live prices
+window.startLivePriceFeed = function(symbol) {
+    if (window.livePriceTimer) {
+        clearInterval(window.livePriceTimer);
     }
 
-    // Convert symbols to Binance's specific secure lowercase channel mapping strings
-    let streamTicker = "btcusdt"; 
-    if (symbol === "XAUUSD") streamTicker = "paxgusdt"; // Gold tracking asset
-    if (symbol === "USOUSD") streamTicker = "usdcusdt";  // Stable tracking baseline asset for oil calculations
+    let tickerPair = "BTCUSDT"; 
+    if (symbol === "XAUUSD") tickerPair = "PAXGUSDT"; // Real-time gold price tracker
+    if (symbol === "USOUSD") tickerPair = "USDCUSDT"; // Proxy baseline tracker
 
-    console.log("Initializing secure socket connection to stream ticker: " + streamTicker);
-    
-    // Explicitly secure streaming cluster connection endpoint hook
-    try {
-        window.activeWsConnection = new WebSocket(`wss://://binance.com{streamTicker}@ticker`);
+    async function fetchLatestPriceTick() {
+        try {
+            const response = await fetch(`https://binance.com{tickerPair}`);
+            const data = await response.json();
+            const livePrice = parseFloat(data.price);
 
-        window.activeWsConnection.onmessage = function(event) {
-            const marketData = JSON.parse(event.data);
-            const livePrice = parseFloat(marketData.c); // 'c' is latest price tick
-            
             if (!isNaN(livePrice)) {
-                // Update the numeric configuration input field
+                // Update your right panel calculation box input field
                 const priceInput = document.getElementById('e-pr') || document.getElementById('input-price');
                 if (priceInput) priceInput.value = livePrice.toFixed(2);
 
-                // Update the visual index panel metric text string
+                // Update your prominent gold metric display box layout text string
                 const priceHeader = document.getElementById('t-pr') || document.getElementById('header-price-display');
                 if (priceHeader) {
                     priceHeader.innerText = '$' + livePrice.toLocaleString(undefined, {
@@ -131,17 +123,21 @@ window.connectLivePriceFeed = function(symbol) {
                     });
                 }
             }
-        };
-    } catch(err) {
-        console.error("Stream initialization barrier caught: ", err);
+        } catch (e) {
+            console.warn("Live stream network sync warning caught: ", e);
+        }
     }
+
+    // Trigger an initial execution instantly, then query the asset data loop continuously
+    fetchLatestPriceTick();
+    window.livePriceTimer = setInterval(fetchLatestPriceTick, 1500); // Refreshes continuously
 };
 
-// Initialize automated stream loops instantly once page elements complete construction
+// Kick off automated connection loops as soon as script finishes mounting
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => window.connectLivePriceFeed("BTCUSD"));
+    document.addEventListener("DOMContentLoaded", () => window.startLivePriceFeed("BTCUSD"));
 } else {
-    window.connectLivePriceFeed("BTCUSD");
+    window.startLivePriceFeed("BTCUSD");
 }
 
-console.log("ENGINE ENGINE COMPLED - STREAM CONNECTORS ONLINE");
+console.log("ENGINE COMPILED - RELIABLE HTTP LIVE RUNNERS ACTIVE");
