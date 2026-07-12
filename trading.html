@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TapeLedger - Advanced Trading Canvas</title>
     
-    <!-- Explicitly mute browser favicon 404 errors -->
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <!-- Bulletproof offline favicon crash preventative bypass tag -->
+    <link rel="icon" href="data:,">
     
-    <!-- 100% OFFLINE EMBEDDED LIGHTWEIGHT CHART ENGINE -->
+    <!-- STANDALONE EMBEDDED LIGHTWEIGHT CHART ENGINE -->
     <script>
     window.LightweightCharts = {
         createChart: function(element) {
@@ -104,7 +104,6 @@
             width: 100%;
         }
 
-        /* Sidebar Navigation Column */
         .sidebar-left {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -147,7 +146,6 @@
             color: var(--text);
         }
 
-        /* Central Workspace Area */
         .workspace-center {
             display: flex;
             flex-direction: column;
@@ -249,7 +247,6 @@
             border-bottom: 1px solid #1a1d29;
         }
 
-        /* Right Control Panel */
         .strat-side {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -301,5 +298,9 @@
             font-size: 14px;
             cursor: pointer;
             transition: opacity 0.15s ease;
+        }
+
+        .btn-trade:hover {
+            opacity: 0.9;
         }
 
