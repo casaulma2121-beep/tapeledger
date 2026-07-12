@@ -301,3 +301,206 @@
             font-size: 14px;
             cursor: pointer;
             color: white;
+
+
+
+        </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <!-- Sidebar Column -->
+        <div class="sidebar-left">
+            <div class="sidebar-brand">TapeLedger</div>
+            <div class="nav-links">
+                <button class="nav-item active" onclick="switchTab('radar')">Live Radar</button>
+                <button class="nav-item" onclick="switchTab('vault')">Vault Ledger</button>
+                <button class="nav-item" onclick="switchTab('coach')">Discipline Coach</button>
+            </div>
+        </div>
+
+        <!-- Central Column Matrix Workspace -->
+        <div class="workspace-center">
+            <div class="top-navbar">
+                <div class="asset-tabs">
+                    <button class="tab-btn" id="tab-XAUUSD" onclick="sw('XAUUSD')">XAUUSD</button>
+                    <button class="tab-btn active" id="tab-BTCUSD" onclick="sw('BTCUSD')">BTCUSD</button>
+                    <button class="tab-btn" id="tab-USOUSD" onclick="sw('USOUSD')">USOUSD</button>
+                </div>
+                <div class="stat-display-group">
+                    <div class="stat-val-box">
+                        <div class="stat-lbl">Bitcoin Index</div>
+                        <div class="stat-num" id="header-price-display" style="color: var(--gold);">$96,420.00</div>
+                    </div>
+                    <div class="stat-val-box">
+                        <div class="stat-lbl">Win Ratio</div>
+                        <div class="stat-num" style="color: var(--accent-green);">100%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-wrapper">
+                <div id="chart-canvas"></div>
+            </div>
+            
+            <div class="tape-wrapper">
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: bold;">Live Transaction Tape</div>
+                <table class="tape-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Asset</th>
+                            <th>Action</th>
+                            <th>Price</th>
+                            <th>Size</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tape-rows">
+                        <!-- User active orders print here instantly on execution clicks -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Configuration Strat Section Panel -->
+        <div class="strat-side">
+            <div>
+                <div style="font-size:12px; font-weight:bold; color:var(--gold); margin-bottom:15px;">MACRO CONFIG</div>
+                
+                <div class="group">
+                    <label for="c-as">Asset</label>
+                    <input type="text" id="c-as" value="BTCUSD" readonly>
+                </div>
+                
+                <div class="group">
+                    <label for="e-pr">Price ($)</label>
+                    <input type="number" id="e-pr" value="96420">
+                </div>
+                
+                <div class="group">
+                    <label for="e-sz">Volume</label>
+                    <input type="number" id="e-sz" step="0.0001" value="0.5088">
+                </div>
+                
+                <div class="group">
+                    <label for="m-an">Anchor</label>
+                    <select id="m-an">
+                        <option>Bullish Expansion</option>
+                        <option>Bearish Retracement</option>
+                    </select>
+                </div>
+
+                <div style="border-top:1px solid var(--border); margin:20px 0 15px 0; padding-top:15px; font-size:11px; font-weight:bold; color:var(--gold);">ADJUSTED EXPENSES</div>
+                
+                <div class="group">
+                    <label for="fee-pct">Broker Fee (%)</label>
+                    <input type="number" id="fee-pct" step="0.0001" value="0.1588">
+                </div>
+                
+                <div class="group">
+                    <label for="tax-pct">Manual Tax (%)</label>
+                    <input type="number" id="tax-pct" step="0.0001" value="20.0099">
+                </div>
+            </div>
+
+            <div class="exec-btns">
+                <button class="btn-trade btn-buy" id="btn-buy-trigger">BUY</button>
+                <button class="btn-trade btn-sell" id="btn-sell-trigger">SELL</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Active Interface System Engine Logic -->
+    <script>
+        let currentAsset = "BTCUSD";
+        let chartInstance;
+        let candleSeriesInstance;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const chartDiv = document.getElementById('chart-canvas');
+            chartInstance = LightweightCharts.createChart(chartDiv);
+            candleSeriesInstance = chartInstance.addCandlestickSeries();
+            loadMockDataForAsset("BTCUSD");
+        });
+
+        function switchTab(tabId) {
+            console.log("Sidebar workspace layout transition to: " + tabId);
+        }
+
+        function sw(assetName) {
+            currentAsset = assetName;
+            console.log("Asset scope swapped to: " + assetName);
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${assetName}`).classList.add('active');
+            
+            const assetInput = document.getElementById('c-as');
+            if (assetInput) assetInput.value = assetName;
+            
+            const priceHeader = document.getElementById('header-price-display');
+            const priceInput = document.getElementById('e-pr');
+            
+            if(assetName === "BTCUSD") { priceHeader.textContent = "$96,420.00"; priceInput.value = 96420; }
+            if(assetName === "XAUUSD") { priceHeader.textContent = "$2,150.40"; priceInput.value = 2150; }
+            if(assetName === "USOUSD") { priceHeader.textContent = "$78.25"; priceInput.value = 78; }
+
+            loadMockDataForAsset(assetName);
+        }
+
+        function processTradeOrder(orderActionType) {
+            console.log("Processing interaction trigger: " + orderActionType);
+            
+            const priceVal = document.getElementById('e-pr')?.value || "96420";
+            const volumeVal = document.getElementById('e-sz')?.value || "0.5088"; 
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            const tapeRows = document.getElementById('tape-rows');
+            
+            if (tapeRows) {
+                const colorCode = orderActionType === 'BUY' ? 'var(--accent-green)' : 'var(--accent-red)';
+                const rowItemHtml = `
+                    <tr>
+                        <td style="padding: 10px 0; color: #9ca3af;">${timestamp}</td>
+                        <td style="padding: 10px 0; color: #f3f4f6;">${currentAsset}</td>
+                        <td style="padding: 10px 0; color: ${colorCode}; font-weight: bold;">${orderActionType}</td>
+                        <td style="padding: 10px 0; color: #f3f4f6;">$${parseFloat(priceVal).toLocaleString()}</td>
+                        <td style="padding: 10px 0; color: #9ca3af;">${volumeVal}</td>
+                    </tr>
+                `;
+                tapeRows.insertAdjacentHTML('afterbegin', rowItemHtml);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const buyButton = document.getElementById("btn-buy-trigger");
+            const sellButton = document.getElementById("btn-sell-trigger");
+
+            if (buyButton) {
+                buyButton.addEventListener("click", function() {
+                    processTradeOrder("BUY");
+                });
+            }
+
+            if (sellButton) {
+                sellButton.addEventListener("click", function() {
+                    processTradeOrder("SELL");
+                });
+            }
+        });
+
+        function loadMockDataForAsset(asset) {
+            let dataSeed = [];
+            if(asset === "BTCUSD") {
+                dataSeed = [{ close: 40 }, { close: 80 }, { close: 50 }, { close: 95 }];
+            } else if(asset === "XAUUSD") {
+                dataSeed = [{ close: 75 }, { close: 35 }, { close: 80 }, { close: 45 }];
+            } else {
+                dataSeed = [{ close: 25 }, { close: 60 }, { close: 30 }, { close: 75 }];
+            }
+            candleSeriesInstance.setData(dataSeed);
+        }
+    </script>
+</body>
+</html>
