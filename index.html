@@ -289,5 +289,2553 @@
             });
         })();
     </script>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapeLedger - Advanced Trading Canvas</title>
+    <link rel="icon" href="data:,">
+    <style>
+        :root {
+            --bg: #0c0d12; --card-bg: #14161f; --input-bg: #1a1d29;
+            --text: #f3f4f6; --text-muted: #9ca3af;
+            --accent-green: #26a69a; --accent-red: #ff5a5f;
+            --gold: #ffaa00; --border: #23263a;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; min-height: 100vh; }
+        .dashboard-container { display: grid; grid-template-columns: 240px 1fr 340px; gap: 20px; max-width: 1500px; margin: 0 auto; width: 100%; }
+        @media (max-width: 1100px) { .dashboard-container { grid-template-columns: 1fr; } .strat-side { order: 3; } }
+        .sidebar-left { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 24px 16px; display: flex; flex-direction: column; gap: 25px; }
+        .sidebar-brand { font-size: 18px; font-weight: 800; padding-left: 8px; }
+        .nav-links { display: flex; flex-direction: column; gap: 8px; }
+        .nav-item { background: none; border: none; color: var(--text-muted); text-align: left; padding: 12px 16px; font-size: 14px; border-radius: 8px; cursor: pointer; width: 100%; }
+        .nav-item:hover, .nav-item.active { background: var(--input-bg); color: var(--text); }
+        .nav-item .nav-check { color: var(--accent-green); font-weight: 800; margin-left: 4px; }
+        .radar-intro { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.45; }
+        .radar-intro strong { color: var(--gold); }
+        .tier-pill { font-size: 10px; background: var(--input-bg); border: 1px solid var(--border); padding: 6px 10px; border-radius: 20px; color: var(--gold); margin: 0 8px 8px; display: inline-block; }
+        .workspace-center { display: flex; flex-direction: column; min-width: 0; }
+        .top-navbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: var(--card-bg); padding: 14px 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 8px; }
+        .nav-left { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .nav-left-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .ws-select { background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-weight: 700; font-size: 13px; }
+        .ws-hint { font-size: 11px; color: var(--text-muted); }
+        .ws-hint.aud { color: var(--gold); }
+        .active-pattern-badge { font-size: 10px; color: var(--gold); background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3); padding: 4px 8px; border-radius: 4px; margin-top: 4px; display: inline-block; }
+        .asset-tabs { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .sym-tab-wrap { display: inline-flex; align-items: center; gap: 2px; }
+        .tab-btn { background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .tab-btn.active { background: var(--accent-red); color: #fff; border-color: var(--accent-red); }
+        .tab-btn.add-btn { border-style: dashed; color: var(--gold); }
+        .tab-btn.small { padding: 6px 12px; font-size: 12px; }
+        .tab-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; }
+        .stat-val-box { text-align: right; }
+        .stat-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+        .stat-num { font-weight: 700; font-size: 22px; }
+        #t-pr { color: var(--gold) !important; }
+        .live-badge { font-size: 10px; color: var(--accent-green); margin-left: 6px; }
+        .live-badge.delayed { color: var(--gold); }
+        .chart-wrapper { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 16px 20px 20px; margin-bottom: 20px; }
+        .chart-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+        .chart-ohlc { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--text-muted); }
+        .chart-ohlc .hi { color: var(--accent-green); }
+        .chart-ohlc .lo { color: var(--accent-red); }
+        .chart-ohlc .last { color: var(--gold); }
+        .chart-meta { font-size: 11px; color: var(--text-muted); text-align: right; }
+        .chart-broker-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 12px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; }
+        .broker-tagline { font-size: 11px; color: var(--text-muted); line-height: 1.45; flex: 1; min-width: 200px; }
+        .broker-cta-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-broker { padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border); background: #1a1d29; color: var(--text); font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+        .btn-broker.primary { border-color: var(--gold); color: var(--gold); background: rgba(255, 200, 87, 0.08); }
+        .btn-broker:hover { border-color: var(--gold); }
+        .btn-broker.locked { color: var(--text-muted); border-style: dashed; cursor: pointer; background: transparent; }
+        .partner-locked-box { background: var(--input-bg); border: 1px dashed var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+        .partner-locked-box strong { color: var(--gold); display: block; margin-bottom: 6px; font-size: 11px; text-transform: uppercase; }
+        .btn-partner-locked { width: 100%; margin-top: 10px; padding: 10px; border-radius: 6px; border: 1px dashed var(--border); background: transparent; color: var(--gold); font-weight: 600; cursor: pointer; font-size: 12px; }
+        .marker-toggle { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .marker-toggle input { width: auto; }
+        .chart-canvas-wrap { height: 380px; background: linear-gradient(180deg, #0e1017, #0a0c12); border-radius: 8px; border: 1px solid #1a1d29; overflow: hidden; }
+        #chart-container { width: 100%; height: 100%; }
+        .tape-wrapper { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; }
+        .tape-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+        .tape-table th { text-align: left; color: var(--text-muted); padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .tape-table td { padding: 10px 8px 10px 0; border-bottom: 1px solid #1a1d29; font-family: ui-monospace, monospace; }
+        .scroll { max-height: 220px; overflow-y: auto; }
+        .jr-head { font-size: 11px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-bottom: 10px; }
+        .jr-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .jr-detail { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; font-size: 12px; line-height: 1.6; color: var(--text-muted); }
+        .jr-detail.win { border-color: rgba(38,166,154,0.5); background: rgba(38,166,154,0.08); }
+        .jr-detail.loss { border-color: rgba(255,90,95,0.5); background: rgba(255,90,95,0.08); }
+        .jr-detail.open-pos { border-color: rgba(255,170,0,0.4); background: rgba(255,170,0,0.06); }
+        .jr-detail .pnl-win { color: var(--accent-green); font-weight: 700; }
+        .jr-detail .pnl-loss { color: var(--accent-red); font-weight: 700; }
+        .jr-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; background: var(--input-bg); font-size: 12px; }
+        .jr-row:hover, .jr-row.active { border-color: var(--gold); background: #1a1d29; }
+        .jr-row .jr-right.win { color: var(--accent-green); font-weight: 700; }
+        .jr-row .jr-right.loss { color: var(--accent-red); font-weight: 700; }
+        .pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+        .pattern-card { background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+        .pattern-card.active-pattern { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(255,170,0,0.2); }
+        .pattern-card.locked { opacity: 0.85; }
+        .pattern-card h4 { margin: 0; font-size: 15px; color: var(--text); }
+        .pattern-card p { margin: 0; font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+        .pattern-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+        .badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; }
+        .badge.free { background: rgba(38,166,154,0.2); color: var(--accent-green); }
+        .badge.member { background: rgba(255,170,0,0.15); color: var(--gold); }
+        .badge.paid { background: rgba(255,90,95,0.15); color: var(--accent-red); }
+        .badge.sheet { background: var(--card-bg); color: var(--text-muted); border: 1px solid var(--border); }
+        .pattern-card ul { margin: 0; padding-left: 18px; font-size: 11px; color: var(--text-muted); }
+        .pattern-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+        .btn-activate { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; background: var(--gold); color: #0c0d12; font-size: 12px; }
+        .btn-activate:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text-muted); font-size: 12px; cursor: pointer; }
+        .lab-banner { background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.25); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: var(--text-muted); }
+        .lab-banner strong { color: var(--gold); }
+        .checklist-box { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 12px; }
+        .checklist-box label { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; cursor: pointer; color: var(--text-muted); line-height: 1.45; }
+        .checklist-box input { width: auto; margin-top: 3px; }
+        .ck-zone { font-size: 10px; font-weight: 700; color: var(--gold); background: rgba(255,170,0,0.12); padding: 2px 6px; border-radius: 4px; margin-right: 4px; }
+        .ck-num { color: var(--gold); font-weight: 800; margin-right: 4px; }
+        .guide-highlight { outline: 2px solid var(--gold); outline-offset: 3px; animation: guidePulse 1.2s ease 2; border-radius: 8px; }
+        @keyframes guidePulse { 0%, 100% { outline-color: rgba(255,170,0,0.45); } 50% { outline-color: rgba(255,170,0,0.95); } }
+        .tour-target { outline: 2px solid var(--gold); outline-offset: 4px; position: relative; z-index: 9992; border-radius: 8px; animation: guidePulse 1.2s ease infinite; }
+        .tour-overlay { display: none; position: fixed; inset: 0; z-index: 9990; pointer-events: none; }
+        .tour-overlay.active { display: block; pointer-events: auto; background: rgba(0,0,0,0.38); }
+        .tour-card { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); width: min(420px, calc(100vw - 32px)); background: var(--card-bg); border: 2px solid var(--gold); border-radius: 12px; padding: 18px 20px; z-index: 9993; box-shadow: 0 16px 48px rgba(0,0,0,0.55); pointer-events: auto; }
+        .tour-step-num { font-size: 10px; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .tour-card h3 { margin: 0 0 8px; font-size: 16px; color: var(--text); }
+        .tour-card p { margin: 0 0 14px; font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+        .tour-btns { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+        .tour-btns button { padding: 10px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .btn-tour-skip { border: 1px solid var(--border); background: transparent; color: var(--text-muted); }
+        .btn-tour-next { border: none; background: var(--gold); color: #0c0d12; }
+        .btn-tour-start { margin-top: 8px; padding: 8px 14px; border: 1px solid var(--gold); border-radius: 6px; background: rgba(255,170,0,0.1); color: var(--gold); font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .mod-auto-tag { font-size: 9px; font-weight: 800; color: var(--accent-green); text-transform: uppercase; margin-left: 6px; }
+        .strat-side { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); padding: 24px; }
+        .strat-title { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 16px; text-transform: uppercase; }
+        .group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+        .group label { font-size: 12px; color: var(--text-muted); }
+        .group input, .group select { background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; color: var(--text); font-size: 14px; width: 100%; }
+        .fill-mode-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 4px; }
+        .fill-mode-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; }
+        .fill-mode-row input { width: auto; }
+        .section-divider { border-top: 1px solid var(--border); margin: 8px 0 16px; padding-top: 16px; font-size: 11px; font-weight: 700; color: var(--gold); }
+        .exec-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        #guide-exec .btn-trade { position: relative; }
+        .btn-trade { padding: 14px; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; }
+        .btn-buy { background: var(--accent-green); color: #0c0d12; }
+        .btn-sell { background: var(--accent-red); color: #0c0d12; }
+        .btn-partner { display: block; width: 100%; padding: 12px; margin-bottom: 8px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-weight: 600; text-align: center; text-decoration: none; font-family: inherit; font-size: 13px; cursor: pointer; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .coach-card { background: var(--input-bg); border: 1px solid var(--border); padding: 20px; border-radius: 8px; margin-bottom: 15px; }
+        .coach-card h4 { margin: 0 0 10px; color: var(--gold); font-size: 14px; }
+        .coach-card p { margin: 0; font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+        .empty-row { color: var(--text-muted); font-style: italic; font-size: 12px; }
+        .act-buy { color: var(--accent-green); font-weight: 700; }
+        .act-sell { color: var(--accent-red); font-weight: 700; }
+        .fill-tag { font-size: 10px; color: var(--text-muted); background: var(--input-bg); padding: 2px 6px; border-radius: 4px; }
+        .hint, .disclosure { font-size: 11px; color: var(--text-muted); line-height: 1.45; margin-top: 8px; }
+        .disclosure { border-top: 1px solid var(--border); padding-top: 12px; }
+        .disclosure a { color: var(--gold); }
+        .sim-note { font-size: 10px; color: var(--accent-red); margin-top: 8px; }
+        #status-line { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; min-height: 16px; }
+        #vault-summary { font-size: 13px; color: var(--gold); margin-bottom: 12px; }
+        .partner-box { display: none; }
+        .partner-box.visible { display: block; }
+        input[readonly] { opacity: 0.85; cursor: not-allowed; }
+        .vault-sheets { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .vault-sheet-card { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; cursor: pointer; text-align: left; width: 100%; color: var(--text); font-family: inherit; }
+        .vault-sheet-card.active { border-color: var(--gold); background: #1a1d29; }
+        .vault-sheet-card .vs-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; }
+        .vault-sheet-card .vs-stat { font-size: 15px; font-weight: 700; color: var(--gold); }
+        .vault-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+        .vault-toolbar select { background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 13px; }
+        /* Disclaimer modal */
+        .disc-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
+        .disc-overlay.show { display: flex; }
+        .disc-modal { background: var(--card-bg); border: 2px solid var(--gold); border-radius: 12px; max-width: 520px; width: 100%; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .disc-modal h2 { margin: 0 0 8px; font-size: 18px; color: var(--gold); }
+        .disc-modal .disc-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+        .disc-modal .disc-body { font-size: 13px; line-height: 1.65; color: var(--text); margin-bottom: 20px; }
+        .disc-modal .disc-body li { margin-bottom: 8px; }
+        .disc-check { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; font-size: 13px; cursor: pointer; }
+        .disc-check input { margin-top: 3px; width: auto; }
+        .disc-btns { display: flex; gap: 12px; }
+        .disc-accept { flex: 1; padding: 14px; border: none; border-radius: 8px; background: var(--gold); color: #0c0d12; font-weight: 800; cursor: pointer; font-size: 14px; }
+        .disc-accept:disabled { opacity: 0.4; cursor: not-allowed; }
+        .disc-cancel { padding: 14px 20px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
+        /* Course path */
+        .course-stages { display: flex; flex-direction: column; gap: 16px; }
+        .stage-card { background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; padding: 20px; position: relative; }
+        .stage-card.done { border-color: rgba(38,166,154,0.5); }
+        .stage-card.current { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(255,170,0,0.15); }
+        .stage-card.locked { opacity: 0.75; }
+        .stage-num { font-size: 10px; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+        .stage-card h4 { margin: 0 0 8px; font-size: 16px; }
+        .stage-card p { margin: 0 0 10px; font-size: 12px; color: var(--text-muted); line-height: 1.55; }
+        .stage-req { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+        .stage-req li { margin-bottom: 4px; }
+        .stage-status { display: inline-block; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 10px; }
+        .stage-status.done { background: rgba(38,166,154,0.2); color: var(--accent-green); }
+        .stage-status.current { background: rgba(255,170,0,0.15); color: var(--gold); }
+        .stage-status.locked { background: var(--card-bg); color: var(--text-muted); border: 1px solid var(--border); }
+        .stage-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .curriculum-section { margin-top: 8px; }
+        .curriculum-head { font-size: 11px; text-transform: uppercase; color: var(--gold); font-weight: 700; margin: 20px 0 12px; letter-spacing: 0.04em; }
+        .journey-bar { background: var(--input-bg); border: 1px solid var(--gold); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; }
+        .journey-bar p { margin: 0 0 10px; font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+        .journey-progress { font-size: 13px; font-weight: 700; color: var(--accent-green); margin-bottom: 12px; }
+        .curriculum-module { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin-top: 10px; }
+        .curriculum-module.done { border-color: rgba(38,166,154,0.4); }
+        .curriculum-module.auto-done .mod-head input { opacity: 0.7; cursor: default; }
+        .mod-current { border-color: var(--gold) !important; background: rgba(255,170,0,0.06); }
+        .mod-later { opacity: 0.55; }
+        .mod-you-here { font-size: 12px; font-weight: 700; color: var(--gold); margin: 14px 0 10px; padding: 8px 10px; background: rgba(255,170,0,0.08); border-radius: 6px; }
+        .mod-row { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+        .mod-row.mod-current { background: rgba(255,170,0,0.08); border-radius: 6px; padding: 8px; margin: 0 -8px; border-bottom-color: transparent; }
+        .mod-row:last-child { border-bottom: none; }
+        .mod-icon { width: 18px; flex-shrink: 0; font-weight: 800; text-align: center; }
+        .mod-icon.done { color: var(--accent-green); }
+        .mod-icon.current { color: var(--gold); }
+        .mod-icon.pending { color: var(--text-muted); }
+        .mod-row-body { flex: 1; min-width: 0; }
+        .mod-row-title { font-weight: 600; color: var(--text); margin-bottom: 2px; }
+        .mod-nav-hint { font-size: 11px; color: var(--gold); }
+        .stage-card.compact { padding: 12px 16px; }
+        .stage-card.compact h4 { font-size: 14px; margin-bottom: 4px; }
+        .stage-card.compact p { margin: 0; font-size: 11px; }
+        .stage1-modules { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+        .btn-continue-mod { margin-top: 12px; width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--gold); color: #0c0d12; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; }
+        .mod-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+        .mod-head input { margin-top: 3px; width: auto; flex-shrink: 0; cursor: pointer; }
+        .mod-head h5 { margin: 0; font-size: 13px; color: var(--text); }
+        .mod-brief { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 0 0 10px 18px; }
+        .mod-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: 18px; }
+        .btn-mod { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .btn-mod.primary { border-color: var(--gold); color: var(--gold); }
+        .curriculum-pillar { background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+        .curriculum-pillar.locked { opacity: 0.6; }
+        .pillar-head { padding: 12px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; user-select: none; }
+        .pillar-head h4 { margin: 0; font-size: 13px; color: var(--text); font-weight: 600; }
+        .pillar-meta { font-size: 10px; color: var(--text-muted); }
+        .pillar-chevron { color: var(--gold); font-size: 11px; transition: transform 0.15s; flex-shrink: 0; }
+        .curriculum-pillar.open .pillar-chevron { transform: rotate(90deg); }
+        .pillar-body { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); line-height: 1.55; }
+        .curriculum-pillar.open .pillar-body { display: block; }
+        .pillar-teaser { margin: 12px 0 0; }
+        .pillar-soon { margin-top: 10px; font-size: 10px; color: var(--gold); font-style: italic; }
+        .verify-field { width: 100%; background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px; padding: 12px; color: var(--text); font-size: 14px; margin-bottom: 12px; }
+        .verify-hint { font-size: 11px; color: var(--gold); margin-bottom: 12px; line-height: 1.5; }
+        .verify-step { display: none; }
+        .verify-step.active { display: block; }
+        .social-links { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+        .social-links a { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); font-size: 12px; text-decoration: none; background: var(--card-bg); }
+        .social-links a.disabled { opacity: 0.5; pointer-events: none; }
+        .social-soon { background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.25); border-radius: 8px; padding: 12px; font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+        .xp-pill { font-size: 10px; background: rgba(38,166,154,0.12); border: 1px solid rgba(38,166,154,0.35); padding: 6px 10px; border-radius: 20px; color: var(--accent-green); margin: 0 8px 8px; display: inline-block; cursor: pointer; }
+        .xp-pill:hover { background: rgba(38,166,154,0.2); }
+        .profile-card { background: var(--input-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin: 0 8px 12px; }
+        .profile-name { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+        .profile-status { font-size: 11px; color: var(--accent-green); font-weight: 600; }
+        .profile-email { font-size: 10px; color: var(--text-muted); margin-top: 6px; word-break: break-all; }
+        .stage1-banner { display: none; background: rgba(38,166,154,0.12); border: 1px solid rgba(38,166,154,0.4); border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; font-size: 13px; color: var(--text); }
+        .stage1-banner strong { color: var(--accent-green); font-size: 14px; }
+        .stage1-banner.done { background: rgba(38,166,154,0.08); }
+        .points-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 12px 0; }
+        .points-table th, .points-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--border); }
+        .points-table th { color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
+        .points-table td:last-child { color: var(--accent-green); font-weight: 700; text-align: right; white-space: nowrap; }
+        .points-table td:nth-child(2) { color: var(--text-muted); font-size: 11px; }
+        .pattern-drop-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; text-align: center; color: var(--text-muted); font-size: 12px; transition: border-color 0.2s, background 0.2s; }
+        .pattern-drop-zone.active { border-color: var(--gold); background: rgba(255,170,0,0.06); color: var(--gold); }
+        .pattern-drop-zone strong { display: block; color: var(--text); font-size: 14px; margin-bottom: 6px; }
+        .preview-modal { max-width: 560px; max-height: 90vh; overflow-y: auto; }
+        .preview-steps { display: grid; gap: 10px; margin-bottom: 16px; }
+        .preview-step { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 12px; color: var(--text-muted); }
+        .preview-step em { color: var(--gold); font-style: normal; font-weight: 700; }
+        .preview-example { background: rgba(38,166,154,0.08); border: 1px solid rgba(38,166,154,0.25); border-radius: 8px; padding: 12px; font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+    </style>
+    <script src="https://unpkg.com/lightweight-charts@4.2.1/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+
+<div id="disc-overlay" class="disc-overlay">
+    <div class="disc-modal">
+        <h2>Before you continue</h2>
+        <div class="disc-sub">Educational platform · Journal only · Not personal advice</div>
+        <div class="disc-body">
+            <ul>
+                <li>TapeLedger is an <strong>educational journal</strong> for practice and review. We do not execute trades or provide personal financial advice.</li>
+                <li>Patterns and sheets are <strong>training frameworks</strong> — not buy/sell signals or guarantees.</li>
+                <li>If you apply ideas from this platform in <strong>real trading</strong>, all risk, loss, fees, and tax are <strong>entirely your responsibility</strong>.</li>
+                <li>Past journal entries and simulated P&amp;L do not predict future results.</li>
+            </ul>
+        </div>
+        <label class="disc-check">
+            <input type="checkbox" id="disc-agree" onchange="updateDiscAccept()">
+            <span>I have read and understand that TapeLedger is for education only. I accept full responsibility for any real trading decisions I make.</span>
+        </label>
+        <div class="disc-btns">
+            <button type="button" class="disc-accept" id="disc-accept-btn" disabled onclick="acceptDisclaimer()">I understand — continue</button>
+            <button type="button" class="disc-cancel" onclick="closeDisclaimer()">Not now</button>
+        </div>
+    </div>
+</div>
+
+<div id="email-overlay" class="disc-overlay">
+    <div class="disc-modal">
+        <h2>Verify your email</h2>
+        <div class="disc-sub">Stage 1 · Required before activating any pattern</div>
+        <div id="email-step-send" class="verify-step active">
+            <div class="disc-body">We send a one-time code to confirm your address. Demo mode shows the code on screen until tapeledger.com email is live.</div>
+            <input type="email" class="verify-field" id="verify-email-input" placeholder="you@example.com">
+            <div class="disc-btns">
+                <button type="button" class="disc-accept" onclick="sendEmailCode()">Send code</button>
+                <button type="button" class="disc-cancel" onclick="closeEmailModal()">Cancel</button>
+            </div>
+        </div>
+        <div id="email-step-code" class="verify-step">
+            <div class="disc-body">Enter the 6-digit code sent to <strong id="verify-email-display"></strong></div>
+            <div class="verify-hint" id="email-demo-hint"></div>
+            <input type="text" class="verify-field" id="verify-code-input" placeholder="000000" maxlength="6" inputmode="numeric">
+            <div class="disc-btns">
+                <button type="button" class="disc-accept" onclick="confirmEmailCode()">Verify &amp; continue</button>
+                <button type="button" class="disc-cancel" onclick="showEmailStep('send')">Back</button>
+            </div>
+        </div>
+        <div id="email-step-name" class="verify-step">
+            <div class="disc-body">Choose a <strong>display name</strong> for your learner profile. This shows in the sidebar after email verify.</div>
+            <input type="text" class="verify-field" id="verify-name-input" placeholder="Your name" maxlength="32">
+            <div class="disc-btns">
+                <button type="button" class="disc-accept" onclick="saveDisplayName()">Save profile &amp; continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="social-overlay" class="disc-overlay">
+    <div class="disc-modal">
+        <h2>Unlock Member stage</h2>
+        <div class="disc-sub">Stage 2 · Email verified · Social engagement</div>
+        <div class="social-soon" id="social-soon-banner">
+            <strong>Social channels coming soon.</strong> Instagram &amp; Facebook pages are not live yet.
+            Use preview code <code>TAPE-DEMO</code> below, or the Demo Member button in Pattern Lab for testing.
+        </div>
+        <div class="social-links">
+            <a id="link-instagram" href="#" target="_blank" rel="noopener">Instagram — coming soon</a>
+            <a id="link-facebook" href="#" target="_blank" rel="noopener">Facebook — coming soon</a>
+        </div>
+        <label class="disc-check">
+            <input type="checkbox" id="social-follow-check" onchange="updateSocialUnlock()">
+            <span>I have followed TapeLedger on social (or will when pages launch)</span>
+        </label>
+        <input type="text" class="verify-field" id="social-code-input" placeholder="Follower / preview code (e.g. TAPE-DEMO)" oninput="updateSocialUnlock()">
+        <div class="disc-btns">
+            <button type="button" class="disc-accept" id="social-unlock-btn" disabled onclick="unlockMemberStage()">Unlock Member</button>
+            <button type="button" class="disc-cancel" onclick="closeSocialModal()">Not now</button>
+        </div>
+    </div>
+</div>
+
+<div id="points-overlay" class="disc-overlay">
+    <div class="disc-modal preview-modal">
+        <h2>Tape points guide</h2>
+        <div class="disc-sub">Learning rewards · Not money · Not gambling</div>
+        <div class="disc-body">
+            Tape points reward <strong>educational actions</strong> — previewing patterns, using checklists,
+            and logging simulated journal entries. They measure discipline and review habits, not trading profit or edge.
+        </div>
+        <table class="points-table">
+            <thead><tr><th>Action</th><th>Points</th></tr></thead>
+            <tbody>
+                <tr><td>First preview of a pattern</td><td>+25</td></tr>
+                <tr><td>First activate of a pattern</td><td>+50</td></tr>
+                <tr><td>Each checklist item (once)</td><td>+15</td></tr>
+                <tr><td>Simulated journal log</td><td>+10 (max 20 logs)</td></tr>
+                <tr><td>Stage 1 module auto-complete</td><td>+10 each</td></tr>
+            </tbody>
+        </table>
+        <div class="disc-body" style="margin-bottom:0;">
+            <strong>Not included:</strong> cash, prizes, profit competitions, or wagering.
+            Discussions should focus on entry quality and review effectiveness — not trading edge for others.
+        </div>
+        <div class="disc-btns" style="margin-top:20px;">
+            <button type="button" class="disc-accept" onclick="closePointsGuide()">Got it</button>
+        </div>
+    </div>
+</div>
+
+<div id="preview-overlay" class="disc-overlay">
+    <div class="disc-modal preview-modal">
+        <h2 id="preview-title">Pattern preview</h2>
+        <div class="disc-sub" id="preview-sub">Educational walkthrough — example only, not a signal</div>
+        <div class="preview-steps" id="preview-steps"></div>
+        <div class="preview-example" id="preview-example"></div>
+        <div class="disc-btns">
+            <button type="button" class="disc-accept" id="preview-train-btn" onclick="startTrainingFromPreview()">Start training on Live Radar</button>
+            <button type="button" class="disc-cancel" onclick="viewPatternExample()">View example on chart</button>
+        </div>
+        <div class="disc-btns" style="margin-top:10px;">
+            <button type="button" class="disc-cancel" style="flex:1;" onclick="closePreview()">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-container">
+    <div class="sidebar-left">
+        <div class="sidebar-brand">TapeLedger</div>
+        <div class="profile-card" id="profile-card" style="display:none;">
+            <div class="profile-name" id="profile-name">—</div>
+            <div class="profile-status" id="profile-status">Verified learner</div>
+            <div class="profile-email" id="profile-email"></div>
+        </div>
+        <span class="tier-pill" id="tier-pill">Tier: Free</span>
+        <span class="xp-pill" id="xp-pill" onclick="openPointsGuide()" title="Tape points guide">Tape points: 0</span>
+        <div class="nav-links">
+            <button type="button" class="nav-item active" id="nav-radar" onclick="switchTab('radar')">Live Radar</button>
+            <button type="button" class="nav-item" id="nav-course" onclick="switchTab('course')">Course Path</button>
+            <button type="button" class="nav-item" id="nav-patterns" onclick="switchTab('patterns')">Pattern Lab</button>
+            <button type="button" class="nav-item" id="nav-reading" onclick="switchTab('reading')">Market Reading</button>
+            <button type="button" class="nav-item" id="nav-vault" onclick="switchTab('vault')">Vault Ledger</button>
+            <button type="button" class="nav-item" id="nav-coach" onclick="switchTab('coach')">Discipline Coach</button>
+        </div>
+    </div>
+
+    <div class="workspace-center">
+        <div id="panel-radar" class="tab-panel active">
+            <p class="radar-intro"><strong>Main workspace.</strong> Chart, checklist ①②③, and simulated journal. Your step-by-step map is on <button type="button" class="btn-tour-start" onclick="switchTab('course')">Course Path</button> (2nd tab).</p>
+            <div class="top-navbar">
+                <div class="nav-left">
+                    <div class="nav-left-row">
+                        <select class="ws-select" id="ws-select" onchange="switchWorkspace(this.value)"></select>
+                        <div class="asset-tabs" id="symbol-tabs"></div>
+                        <button type="button" class="tab-btn add-btn" onclick="promptAddSymbol()">+ Add</button>
+                    </div>
+                    <div class="ws-hint" id="ws-hint"></div>
+                    <div class="active-pattern-badge" id="active-pattern-badge" style="display:none;"></div>
+                </div>
+                <div style="display:flex;gap:20px;">
+                    <div class="stat-val-box" id="guide-badge">
+                        <div class="stat-lbl" id="t-lbl">Bitcoin<span class="live-badge">LIVE</span></div>
+                        <div class="stat-num" id="t-pr">Loading…</div>
+                    </div>
+                    <div class="stat-val-box">
+                        <div class="stat-lbl">Win Ratio</div>
+                        <div class="stat-num" id="win-ratio" style="color:var(--accent-green);">—</div>
+                    </div>
+                </div>
+            </div>
+            <div id="status-line"></div>
+            <div id="stage1-banner" class="stage1-banner"></div>
+            <div class="chart-wrapper" id="guide-chart">
+                <div class="chart-head">
+                    <div class="chart-ohlc" id="chart-ohlc">Loading…</div>
+                    <div>
+                        <label class="marker-toggle"><input type="checkbox" id="show-markers" checked onchange="toggleMarkers()"> All markers</label>
+                        <div class="chart-meta" id="chart-meta">—</div>
+                    </div>
+                </div>
+                <div class="chart-broker-bar" id="chart-broker-bar">
+                    <span class="broker-tagline" id="broker-tagline">Journal here · live tape on your broker</span>
+                    <div class="broker-cta-row" id="broker-cta-row"></div>
+                </div>
+                <div class="chart-canvas-wrap"><div id="chart-container"></div></div>
+            </div>
+            <div id="pattern-checklist-wrap"></div>
+            <div class="tape-wrapper" id="guide-review">
+                <div class="jr-head">Trade review — educational journal</div>
+                <div class="jr-tabs">
+                    <button type="button" class="tab-btn active" id="jr-open" onclick="setJournalView('open')">Open</button>
+                    <button type="button" class="tab-btn" id="jr-done" onclick="setJournalView('done')">Completed (FIFO)</button>
+                    <button type="button" class="tab-btn" onclick="clearReview()">Clear highlight</button>
+                </div>
+                <div class="jr-detail" id="jr-detail">Activate a pattern in Pattern Lab to train with structure.</div>
+                <div class="scroll" id="jr-list"></div>
+            </div>
+            <div class="tape-wrapper">
+                <div style="font-size:11px;text-transform:uppercase;color:var(--text-muted);font-weight:bold;">Live Transaction Tape</div>
+                <div class="scroll">
+                    <table class="tape-table">
+                        <thead><tr><th>Time</th><th>Asset</th><th>Fill</th><th>Action</th><th>Price</th><th>Size</th></tr></thead>
+                        <tbody id="t-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="panel-patterns" class="tab-panel">
+            <div class="tape-wrapper">
+                <div class="jr-head">Pattern Lab — sheets + training frameworks</div>
+                <div class="lab-banner">
+                    <strong>Pattern drop.</strong> Preview any pattern below to see how the framework works, earn Tape points, then activate when ready.
+                    Email required before training. Not signals — journal practice only.
+                </div>
+                <div class="pattern-drop-zone" id="pattern-drop-zone">
+                    <strong>Drop zone</strong>
+                    Click <em>Preview</em> on a pattern card to drop it here and open the walkthrough.
+                </div>
+                <div style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;">
+                    <button type="button" class="tab-btn small" onclick="demoTier('member')">Demo: Member signup</button>
+                    <button type="button" class="tab-btn small" onclick="demoTier('paid')">Demo: Paid unlock</button>
+                    <button type="button" class="tab-btn small" onclick="demoTier('free')">Reset: Free tier</button>
+                </div>
+                <div class="pattern-grid" id="pattern-grid"></div>
+            </div>
+        </div>
+
+        <div id="panel-course" class="tab-panel">
+            <div class="tape-wrapper">
+                <div class="jr-head">Course path — your learning stages</div>
+                <div class="lab-banner">
+                    <strong>Stage 1 map.</strong> All 7 steps live inside the Stage 1 card below — follow the <strong>→</strong> arrow. No repeat email once verified.
+                </div>
+                <div class="course-stages" id="course-stages"></div>
+                <p class="disclosure" style="margin-top:16px;border-top:none;padding-top:0;">© TapeLedger — all patterns, sheets, and course content are proprietary. Not for redistribution.</p>
+            </div>
+        </div>
+
+        <div id="panel-reading" class="tab-panel">
+            <div class="tape-wrapper">
+                <div class="jr-head">Market reading — broader context (coming soon)</div>
+                <div class="lab-banner">
+                    <strong>Stage 3+.</strong> Optional newsletters and journals to understand macro, sectors, and session context —
+                    then log <em>your own</em> view in TapeLedger. Not buy/sell signals.
+                </div>
+                <div class="pattern-grid">
+                    <div class="pattern-card locked">
+                        <div class="pattern-badges"><span class="badge sheet">Planned</span><span class="badge member">Affiliate</span></div>
+                        <h4>Energy &amp; oil briefs</h4>
+                        <p>Sector context for Energy Playbook — WDS, STO, ORG watchlists. Read elsewhere, journal here.</p>
+                        <p style="font-size:11px;color:var(--text-muted);">Partner sign-up link + disclosure · coming soon</p>
+                    </div>
+                    <div class="pattern-card locked">
+                        <div class="pattern-badges"><span class="badge sheet">Planned</span><span class="badge member">Affiliate</span></div>
+                        <h4>ASX / macro newsletters</h4>
+                        <p>Session open, gaps, and delayed-data awareness for Sheet 2 — AUD / ASX patterns.</p>
+                        <p style="font-size:11px;color:var(--text-muted);">Partner sign-up link + disclosure · coming soon</p>
+                    </div>
+                    <div class="pattern-card locked">
+                        <div class="pattern-badges"><span class="badge sheet">Planned</span><span class="badge free">Free tier</span></div>
+                        <h4>Educational journals &amp; reading lists</h4>
+                        <p>Curated general-market reading for discipline and vocabulary — not tipping services.</p>
+                        <p style="font-size:11px;color:var(--text-muted);">Some free, some affiliate · coming soon</p>
+                    </div>
+                </div>
+                <div class="coach-card" style="margin-top:16px;">
+                    <h4>How this will work</h4>
+                    <p>You sign up on the provider’s site via our link. TapeLedger may earn a referral fee. We do not host their content or republish trade calls.</p>
+                    <p style="margin-top:10px;">Use reading for <strong>context</strong> only. Your journal entries and reviews stay focused on <strong>entry quality and effectiveness</strong> — not edge for others.</p>
+                </div>
+                <p class="disclosure">Affiliate disclosure (when live): TapeLedger may receive a fee if you subscribe via partner links. General information only — not personal advice.</p>
+            </div>
+        </div>
+
+        <div id="panel-vault" class="tab-panel">
+            <div class="tape-wrapper" style="min-height:500px;">
+                <div style="font-size:13px;color:var(--gold);font-weight:bold;margin-bottom:15px;">Vault balances ledger</div>
+                <div class="vault-sheets">
+                    <button type="button" class="vault-sheet-card active" id="vs-markets" onclick="setVaultSheet('markets')">
+                        <div class="vs-title">Sheet 1 — Markets</div>
+                        <div class="vs-stat" id="vs-markets-stat">—</div>
+                    </button>
+                    <button type="button" class="vault-sheet-card" id="vs-aud" onclick="setVaultSheet('aud')">
+                        <div class="vs-title">Sheet 2 — AUD / ASX</div>
+                        <div class="vs-stat" id="vs-aud-stat">—</div>
+                    </button>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:16px;">
+                    <button type="button" class="tab-btn active" id="vf-day" onclick="setVaultFilter('day')">Day</button>
+                    <button type="button" class="tab-btn" id="vf-month" onclick="setVaultFilter('month')">Month</button>
+                    <button type="button" class="tab-btn" id="vf-year" onclick="setVaultFilter('year')">Year</button>
+                </div>
+                <div class="vault-toolbar">
+                    <button type="button" class="tab-btn active" id="vv-trades" onclick="setVaultView('trades')">Trades</button>
+                    <button type="button" class="tab-btn" id="vv-bysymbol" onclick="setVaultView('bysymbol')">By symbol</button>
+                    <select id="vault-sort" onchange="setVaultSort(this.value)">
+                        <option value="newest">Sort: Newest</option>
+                        <option value="symbol">Sort: Symbol A–Z</option>
+                        <option value="net-desc">Sort: Net high → low</option>
+                        <option value="net-asc">Sort: Net low → high</option>
+                    </select>
+                </div>
+                <div id="vault-summary"></div>
+                <div class="scroll">
+                    <table class="tape-table">
+                        <thead id="vault-thead"><tr><th>ID</th><th>Asset</th><th>Fill</th><th>Type</th><th>Raw</th><th>Fees</th><th>Tax %</th><th>Net</th></tr></thead>
+                        <tbody id="l-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="panel-coach" class="tab-panel">
+            <div class="tape-wrapper">
+                <h3 style="margin:0 0 16px;font-size:16px;">Discipline &amp; risk</h3>
+                <div class="coach-card"><h4>Educational platform</h4><p>We teach how to log and review — not what to buy or sell.</p></div>
+                <div class="coach-card"><h4>Your risk</h4><p>Real trading decisions are yours alone. Acknowledge the disclaimer before each pattern.</p></div>
+                <div class="coach-card"><h4>FIFO review</h4><p>Completed trades show if your journal entry→exit was profitable after fees.</p></div>
+                <div class="coach-card">
+                    <h4>Tape points guide</h4>
+                    <p>Tape points reward learning actions — pattern preview (+25), first activate (+50), checklist items (+15), and simulated logs (+10, max 20).</p>
+                    <p style="margin-top:10px;">They are <strong>not</strong> money, gambling credits, or profit scores. Focus stays on journal discipline and review — not edge or signals.</p>
+                    <button type="button" class="tab-btn small" style="margin-top:12px;" onclick="openPointsGuide()">View full guide</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="strat-side" id="guide-sidebar">
+        <div class="strat-title" id="strat-title">Markets config</div>
+        <div class="group"><label for="c-as">Asset</label><input type="text" id="c-as" readonly></div>
+        <div class="group">
+            <label>Fill price</label>
+            <div class="fill-mode-row">
+                <label><input type="radio" name="fill-mode" value="market" onchange="setFillMode('market')"> Market</label>
+                <label><input type="radio" name="fill-mode" value="target" onchange="setFillMode('target')"> Target</label>
+            </div>
+        </div>
+        <div class="group"><label for="e-pr" id="price-label">Price (USD)</label><input type="number" id="e-pr" step="0.01"></div>
+        <div class="group"><label for="e-sz">Volume</label><input type="number" id="e-sz" value="0.5088" step="0.0001"></div>
+        <div class="group"><label for="m-an">Pattern anchor</label><select id="m-an"></select></div>
+        <div class="section-divider">Adjusted expenses</div>
+        <div class="group"><label for="fee-pct">Broker fee (%)</label><input type="number" id="fee-pct" value="0.1588" step="0.0001"></div>
+        <div class="group"><label for="tax-pct">Manual tax (%)</label><input type="number" id="tax-pct" value="20" step="0.01"></div>
+        <div class="exec-btns">
+            <div class="exec-btns" id="guide-exec">
+            <button type="button" class="btn-trade btn-buy" onclick="ex('BUY')">Buy</button>
+            <button type="button" class="btn-trade btn-sell" onclick="ex('SELL')">Sell</button>
+            </div>
+        </div>
+        <p class="sim-note">Simulated log only — not a live order at any broker.</p>
+        <div class="section-divider" id="partner-divider">Live tape (partner)</div>
+        <div id="partner-locked" class="partner-locked-box">
+            <strong>Locked — Stage 4</strong>
+            Live broker handoff (Stake / Swyftx) unlocks after paid subscription. Train and journal here first.
+            <button type="button" class="btn-partner-locked" onclick="goCourse()">View Course Path</button>
+        </div>
+        <div id="partner-active" style="display:none;">
+            <p class="hint" style="margin-top:0;margin-bottom:10px;">Journal here · live execution opens on partners in a new tab.</p>
+            <div class="partner-box visible" id="partner-markets">
+                <button type="button" class="btn-partner" id="link-swyftx" onclick="openBrokerSwyftx()">Trade crypto live — Swyftx</button>
+            </div>
+            <div class="partner-box" id="partner-aud">
+                <button type="button" class="btn-partner" id="link-stake" onclick="openBrokerStake()">View ASX live — Stake</button>
+            </div>
+        </div>
+        <p class="disclosure">Affiliate disclosure: TapeLedger may receive a fee if you sign up via partner links. General information only — not personal advice. Patterns are educational frameworks. Charts powered by <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts</a>.</p>
+        <p class="hint">Run <code>python3 serve.py</code> on Desktop, then open <code>http://127.0.0.1:8080/tapeledger.html</code> (gold/oil/ASX need the Yahoo proxy).</p>
+    </div>
+</div>
+
+<div id="tour-overlay" class="tour-overlay" onclick="if(event.target===this)skipTour()">
+    <div class="tour-card" onclick="event.stopPropagation()">
+        <div class="tour-step-num" id="tour-step-num">Step 1 of 7</div>
+        <h3 id="tour-title">Welcome</h3>
+        <p id="tour-text">—</p>
+        <div class="tour-btns">
+            <button type="button" class="btn-tour-skip" onclick="skipTour()">Skip tour</button>
+            <button type="button" class="btn-tour-next" id="tour-next-btn" onclick="nextTourStep()">Next</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const DISCLAIMER_VER = 'v1';
+    if (location.protocol !== 'file:' && sessionStorage.getItem('tl_beta_ok') !== 'true') {
+        window.location.href = 'index.html';
+        return;
+    }
+    const SOCIAL_LAUNCHED = false;
+    const SOCIAL_LINKS = { instagram: 'YOUR_INSTAGRAM_URL', facebook: 'YOUR_FACEBOOK_URL' };
+    const MEMBER_PREVIEW_CODE = 'TAPE-DEMO';
+    const MEMBER_LAUNCH_CODE = 'TAPE-MEMBER';
+  /* Replace href values after Stake Verified / Swyftx Affiliate approve your tracking links */
+    const PARTNER_LINKS = {
+        swyftx: 'https://swyftx.com/affiliate-program/',
+        stake: 'https://hellostake.com/au/StakeVerified',
+        stakeTrade: 'https://trading.hellostake.com/au/trade/equity/',
+        swyftxTrade: 'https://swyftx.com/trade/'
+    };
+    let trades = JSON.parse(localStorage.getItem('tl_trades') || '[]');
+    let tradeId = trades.length ? Math.max.apply(null, trades.map(function (t) { return t.id; })) + 1 : 1;
+    let candles = [], cur = { symbol: 'BTCUSD', price: 0, label: 'Bitcoin' };
+    let liveTimer = null, binanceWs = null, candleSource = '—', vaultFilter = 'day';
+    let vaultSheet = 'markets', vaultView = 'trades', vaultSort = 'newest';
+    let lwChart = null, candleSeries = null, bandSeries = null, feedMode = 'none';
+    let showMarkers = localStorage.getItem('tl_show_markers') !== 'false';
+    let journalView = 'open', completedTrades = [], openPositions = [];
+    let selectedCompleted = null, activePriceLines = [];
+    let userTier = localStorage.getItem('tl_tier') || 'free';
+    let activePatternId = localStorage.getItem('tl_active_pattern') || '';
+    let pendingPatternId = null, discCallback = null;
+    let emailCallback = null, pendingEmailCode = null, pendingEmailAddr = '';
+    let courseModules = JSON.parse(localStorage.getItem('tl_course_modules') || '{}');
+    let patternChecklist = JSON.parse(localStorage.getItem('tl_pattern_checklist') || '{}');
+    let tourActive = false, tourStepIdx = 0;
+    let emailVerified = localStorage.getItem('tl_email_verified') === 'true';
+    let userEmail = localStorage.getItem('tl_user_email') || '';
+    let displayName = localStorage.getItem('tl_display_name') || '';
+    let stage1Complete = localStorage.getItem('tl_stage1_complete') === 'true';
+    let stage1PatternId = localStorage.getItem('tl_stage1_pattern') || '';
+    let socialAck = localStorage.getItem('tl_social_ack') === 'true';
+    let tapeXP = parseInt(localStorage.getItem('tl_xp') || '0', 10) || 0;
+    let previewsDone = JSON.parse(localStorage.getItem('tl_previews') || '[]');
+    let previewPatternId = null, exampleMode = false;
+
+    const CK_NUM = ['①', '②', '③'];
+    const GUIDE_TARGETS = { chart: 'guide-chart', sidebar: 'guide-sidebar', badge: 'guide-badge', review: 'guide-review' };
+    let guideTimer = null;
+
+    function ckText(item) { return typeof item === 'string' ? item : item.text; }
+    function ckZone(item) { return item && item.zone ? item.zone : ''; }
+    function ckLabel(item) { return item && item.label ? item.label : ''; }
+
+    window.guideChecklistZone = function (zone) {
+        Object.keys(GUIDE_TARGETS).forEach(function (z) {
+            var el = document.getElementById(GUIDE_TARGETS[z]);
+            if (el) el.classList.remove('guide-highlight');
+        });
+        if (!zone || !GUIDE_TARGETS[zone]) return;
+        var target = document.getElementById(GUIDE_TARGETS[zone]);
+        if (!target) return;
+        target.classList.add('guide-highlight');
+        if (guideTimer) clearTimeout(guideTimer);
+        guideTimer = setTimeout(function () { target.classList.remove('guide-highlight'); }, 3000);
+        if (zone === 'review') setJournalView('done');
+    };
+
+    const XP = { preview: 25, activate: 50, checklist: 15, trade: 10, module: 10 };
+
+    const COURSE_STAGES = [
+        {
+            id: 1, tier: 'free', title: 'Stage 1 — Free start',
+            desc: 'Complete the 7-module Stage 1 journey: profile, read the tape, activate a pattern, checklist ①②③, first log, and first FIFO review.',
+            requirements: ['Stage 1 journey (7 modules)', 'Email + display name', 'Pattern + disclaimer + checklist ①②③'],
+            unlocks: ['Break & Retest (Markets)', 'ASX Session Journal (AUD/ASX)', 'Sheets 1 & 2', 'Pillars 1–2 library'],
+            action: { label: 'Continue Stage 1', fn: 'continueCurrentModule' }
+        },
+        {
+            id: 2, tier: 'member', title: 'Stage 2 — Member',
+            desc: 'Sector depth: Energy Playbook, macro context (Pillar 3 preview), and community unlock via social or preview code.',
+            requirements: ['Stage 1 complete', 'Follow social channels (or TAPE-DEMO)', 'Member unlock'],
+            unlocks: ['Energy Playbook', 'Sheet 3 — Energy / Oil', 'Pillar 3 partial access'],
+            action: { label: 'Unlock Member', fn: 'openSocialModal' }
+        },
+        {
+            id: 3, tier: 'paid', title: 'Stage 3 — Paid patterns',
+            desc: 'Advanced frameworks: Volatility Squeeze, risk & capital pillar (Pillar 4), and Vault analytics practice.',
+            requirements: ['Member stage complete', 'Purchase pattern access (demo available)'],
+            unlocks: ['Volatility Squeeze Log', 'Sheet 4 — Vol / Crypto', 'Pillar 4 library'],
+            action: { label: 'View paid patterns', fn: 'goPatterns' }
+        },
+        {
+            id: 4, tier: 'live', title: 'Stage 4 — Live terminal',
+            desc: 'Responsible broker handoff: journal in TapeLedger, execute on Stake/Swyftx. Recap execution from Pillar 1.',
+            requirements: ['Paid subscription (Stage 3 complete)'],
+            unlocks: ['Stake live handoff (ASX)', 'Swyftx live handoff (crypto)', 'Chart broker buttons'],
+            action: { label: 'Unlock paid tier (demo)', fn: 'goPatterns' }
+        }
+    ];
+
+    const STAGE1_TOUR = [
+        { module: 'j1', tab: null, target: 'profile-card', title: 'Module 1 — Welcome & safety', text: 'TapeLedger is an educational journal — not a broker or signal service. Verify your email and display name to start.', action: 'openEmailModal', nextLabel: 'Open verify' },
+        { module: 'j2', tab: 'radar', target: 'guide-chart', title: 'Module 2 — Read the tape', text: 'This is Live Radar. Check the live badge, sheet tabs, and chart. Crypto is live; ASX may show ~20 min delayed.', nextLabel: 'Next' },
+        { module: 'j3', tab: 'patterns', target: 'pattern-grid', title: 'Module 3 — Pick your framework', text: 'Open Pattern Lab and activate Break & Retest or ASX Session Journal. Preview first if unsure.', nextLabel: 'Go to Pattern Lab' },
+        { module: 'j4', tab: 'radar', target: 'pattern-checklist-wrap', title: 'Module 4 — Checklist discipline', text: 'Before you log, tick ①②③. Tap a row to highlight where to look on chart or sidebar.', nextLabel: 'Next' },
+        { module: 'j5', tab: 'radar', target: 'guide-exec', title: 'Module 5 — First simulated log', text: 'Use Buy or Sell in the sidebar. Market fill uses live price; Target lets you set a level. Simulated only.', nextLabel: 'Next' },
+        { module: 'j6', tab: 'radar', target: 'jr-done', title: 'Module 6 — First review', text: 'Open Completed (FIFO) to review entry quality and your anchor — not just the dollar result.', nextLabel: 'Show review tab' },
+        { module: 'j7', tab: 'radar', target: 'stage1-banner', title: 'Module 7 — Stage 1 capstone', text: 'Stage 1 completes when email, name, disclaimer, and checklist ①②③ are done. Watch the banner here.', nextLabel: 'Finish tour' }
+    ];
+
+    const STAGE1_JOURNEY = [
+        { id: 'j1', title: 'Welcome & safety', brief: 'Educational journal only — not a broker or signals.', action: 'openEmailModal', navHint: '→ verify email + name (once)' },
+        { id: 'j2', title: 'Read the tape', brief: 'Chart, live badge, sheet tabs.', action: 'goRadar', navHint: '→ Live Radar tab (left menu)' },
+        { id: 'j3', title: 'Pick your framework', brief: 'Activate Break & Retest or ASX Session Journal.', action: 'goPatterns', navHint: '→ Pattern Lab → Activate' },
+        { id: 'j4', title: 'Checklist discipline', brief: 'Tick ①②③ before you log.', action: 'goRadar', navHint: '→ Live Radar → checklist below chart' },
+        { id: 'j5', title: 'First simulated log', brief: 'One practice Buy or Sell — not a live order.', action: 'goRadar', navHint: '→ sidebar Buy / Sell' },
+        { id: 'j6', title: 'First review', brief: 'Open Completed (FIFO).', action: 'goReview', navHint: '→ Completed (FIFO) tab' },
+        { id: 'j7', title: 'Stage 1 capstone', brief: 'Green banner when email, pattern, disclaimer & ①②③ done.', action: 'goRadar', navHint: '→ check banner on Live Radar' }
+    ];
+
+    const CURRICULUM_PILLARS = [
+        { id: 'mechanics', num: '1', title: 'Market Mechanics and Infrastructure', stageMin: 1, teaser: 'Exchanges, order books, order types, margin concepts — mapped to Sheets 1–2, fill modes, and Stage 4 broker handoff.' },
+        { id: 'technical', num: '2', title: 'Technical Analysis and Charting Mastery', stageMin: 1, teaser: 'Price action, trends, classical patterns, indicators & volume — mapped to Pattern Lab frameworks and chart markers.' },
+        { id: 'fundamental', num: '3', title: 'Fundamental and Macro Analysis', stageMin: 2, teaser: 'Macro drivers, valuation basics, sentiment & news — mapped to Energy Playbook and Market Reading (coming soon).' },
+        { id: 'risk', num: '4', title: 'Quantitative Risk and Capital Management', stageMin: 3, teaser: 'Position sizing, R:R, win rate, correlation — mapped to Vault metrics and simulated journal fields.' },
+        { id: 'psychology', num: '5', title: 'Trading Psychology and Business Planning', stageMin: 1, teaser: 'Bias control, the trading journal, routines — core TapeLedger discipline; see Discipline Coach tab.' }
+    ];
+
+    const PATTERNS = {
+        'break-retest': {
+            id: 'break-retest', tier: 'free', sheet: 'markets',
+            name: 'Break & Retest Log', sheetLabel: 'Sheet 1 — Markets (USD)',
+            desc: 'Practice logging breakouts that retest a level before continuation.',
+            learn: ['Identify a clear level', 'Wait for break + retest', 'Log only when rules match'],
+            happens: ['False breaks are common', 'Volume confirmation helps', 'Not every retest holds'],
+            anchors: ['Bullish Expansion', 'Bearish Retracement', 'Range / No edge'],
+            checklist: [
+                { text: 'I know the level I am watching on the chart', zone: 'chart', label: 'Chart' },
+                { text: 'Break fits my rules — I am ready to log', zone: 'sidebar', label: 'Sidebar' },
+                { text: 'I saw a retest — or I am still waiting', zone: '', label: 'Wait' }
+            ],
+            symbols: ['BTCUSD', 'ETHUSD', 'XAUUSD', 'USOUSD'],
+            example: { symbol: 'BTCUSD', entry: 65000, exit: 66800, note: 'Sample break → retest → continuation log — example only' }
+        },
+        'asx-session': {
+            id: 'asx-session', tier: 'free', sheet: 'aud',
+            name: 'ASX Session Journal', sheetLabel: 'Sheet 2 — AUD / ASX',
+            desc: 'Train logging around ASX open, last close, and delayed data awareness.',
+            learn: ['Note delayed vs live', 'Use target fill when closed', 'Review at session end'],
+            happens: ['Gaps at open', 'Thin liquidity off-hours', 'Yahoo data may lag'],
+            anchors: ['Session open bias', 'Range / No edge', 'Pullback to VWAP (concept)'],
+            checklist: [
+                { text: 'I know if the market is open or closed', zone: 'badge', label: 'Live badge' },
+                { text: 'I understand live price vs last close', zone: 'chart', label: 'Chart' },
+                { text: 'I chose volume before Buy / Sell', zone: 'sidebar', label: 'Sidebar' }
+            ],
+            symbols: ['WDS', 'BHP'],
+            example: { symbol: 'BHP', entry: 42.5, exit: 43.1, note: 'Sample session open log with target fill — example only' }
+        },
+        'energy-playbook': {
+            id: 'energy-playbook', tier: 'member', sheet: 'energy',
+            name: 'Energy Playbook', sheetLabel: 'Sheet 3 — Energy / Oil',
+            desc: 'Sector watchlist paired with fair-value style level journaling.',
+            learn: ['Track WDS/STO/ORG together', 'Log vs playbook levels', 'Review weekly'],
+            happens: ['Oil drives correlation', 'News spikes override levels', 'Sector moves in clusters'],
+            anchors: ['Oil-linked expansion', 'Mean reversion', 'News volatility — no edge'],
+            checklist: [
+                { text: 'Oil / sector level noted for context', zone: 'chart', label: 'Chart' },
+                { text: 'Stock vs sector story is clear', zone: 'sidebar', label: 'Sidebar' },
+                { text: 'Risk size is defined before logging', zone: 'sidebar', label: 'Sidebar' }
+            ],
+            symbols: ['WDS', 'STO', 'ORG'],
+            example: { symbol: 'WDS', entry: 28.2, exit: 29.0, note: 'Sample sector-level journal entry — example only' }
+        },
+        'vol-squeeze': {
+            id: 'vol-squeeze', tier: 'paid', sheet: 'volatility',
+            name: 'Volatility Squeeze Log', sheetLabel: 'Sheet 4 — Vol / Crypto',
+            desc: 'Framework for logging compression → expansion on volatile assets.',
+            learn: ['Mark squeeze zone', 'Log breakout attempt', 'Review false vs true break'],
+            happens: ['Many squeezes fail', 'Crypto whipsaws', 'Size down in compression'],
+            anchors: ['Squeeze breakout', 'False break fade', 'Range / No edge'],
+            checklist: [
+                { text: 'Squeeze / quiet zone noted on chart', zone: 'chart', label: 'Chart' },
+                { text: 'Break direction defined before log', zone: 'sidebar', label: 'Sidebar' },
+                { text: 'Stop idea noted (journal only)', zone: 'sidebar', label: 'Sidebar' }
+            ],
+            symbols: ['BTCUSD', 'ETHUSD'],
+            example: { symbol: 'BTCUSD', entry: 64000, exit: 65500, note: 'Sample squeeze breakout log — example only' }
+        }
+    };
+
+    const DEFAULT_SYMBOLS = {
+        markets: ['BTCUSD', 'ETHUSD', 'XAUUSD', 'USOUSD'],
+        aud: ['WDS', 'BHP'],
+        energy: ['WDS', 'STO', 'ORG'],
+        volatility: ['BTCUSD', 'ETHUSD', 'SOLUSD']
+    };
+
+    const WORKSPACES = {
+        markets: { label: 'Sheet 1 — Markets (USD)', hint: 'Journal here · BTC/ETH live in-app · gold/oil delayed — live tape on partner broker', symbols: DEFAULT_SYMBOLS.markets.slice(), tier: 'free' },
+        aud: { label: 'Sheet 2 — AUD / ASX', hint: 'Journal here · ASX chart is delayed/last close · tap Stake for live tape', symbols: DEFAULT_SYMBOLS.aud.slice(), tier: 'free' },
+        energy: { label: 'Sheet 3 — Energy / Oil', hint: 'Member tier · sector watchlist · live ASX on Stake', symbols: DEFAULT_SYMBOLS.energy.slice(), tier: 'member' },
+        volatility: { label: 'Sheet 4 — Vol / Crypto', hint: 'Paid tier · crypto live here · execute on Swyftx', symbols: DEFAULT_SYMBOLS.volatility.slice(), tier: 'paid' }
+    };
+
+    const savedSymbols = JSON.parse(localStorage.getItem('tl_workspace_symbols') || '{}');
+    Object.keys(savedSymbols).forEach(function (id) {
+        if (WORKSPACES[id] && savedSymbols[id] && savedSymbols[id].length) WORKSPACES[id].symbols = savedSymbols[id];
+    });
+    function saveWorkspaceSymbols() {
+        var o = {};
+        Object.keys(WORKSPACES).forEach(function (k) { o[k] = WORKSPACES[k].symbols; });
+        localStorage.setItem('tl_workspace_symbols', JSON.stringify(o));
+    }
+
+    let activeWorkspace = localStorage.getItem('tl_workspace') || 'markets';
+    if (!WORKSPACES[activeWorkspace]) activeWorkspace = 'markets';
+    let activeSymbol = WORKSPACES[activeWorkspace].symbols[0];
+    const fillModes = JSON.parse(localStorage.getItem('tl_fill_modes') || '{}');
+    let fillMode = fillModes[activeWorkspace] || (activeWorkspace === 'aud' ? 'target' : 'market');
+    const LIVE = {
+        BTCUSD: { kind: 'binance', id: 'BTCUSDT', label: 'Bitcoin' },
+        ETHUSD: { kind: 'binance', id: 'ETHUSDT', label: 'Ethereum' },
+        SOLUSD: { kind: 'binance', id: 'SOLUSDT', label: 'Solana' },
+        XAUUSD: { kind: 'yahoo', id: 'GC=F', label: 'Gold (GC futures)' },
+        USOUSD: { kind: 'yahoo', id: 'CL=F', label: 'Crude Oil (WTI)' }
+    };
+    const CRYPTO_LABELS = { BTC: 'Bitcoin', ETH: 'Ethereum', SOL: 'Solana', XRP: 'XRP', ADA: 'Cardano', DOGE: 'Dogecoin', BNB: 'BNB', AVAX: 'Avalanche', LINK: 'Chainlink' };
+    const YAHOO_POLL_MS = 15000, MAX_BARS = 120, BINANCE_INTERVAL = '1m', FETCH_TIMEOUT_MS = 15000;
+
+    function fmtMoney(n) { return '$' + Number(n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    function fmtPct(n) { return Number(n).toFixed(2) + '%'; }
+    function fmtAxis(n) {
+        var v = Number(n);
+        if (v >= 10000) return v.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        if (v >= 100) return v.toFixed(1);
+        return v.toFixed(2);
+    }
+    function fmtHeld(sec) {
+        if (sec < 60) return sec + 's';
+        if (sec < 3600) return Math.round(sec / 60) + 'm';
+        if (sec < 86400) return (sec / 3600).toFixed(1) + 'h';
+        return (sec / 86400).toFixed(1) + 'd';
+    }
+    function setStatus(msg) { var el = document.getElementById('status-line'); if (el) el.textContent = msg; }
+    function todayStr() { return new Date().toISOString().slice(0, 10); }
+    function wsOf(t) { return t.workspace || 'markets'; }
+    function tradeToUnix(t) {
+        if (t.ts) return t.ts;
+        var d = t.date || todayStr();
+        var dt = new Date(d + 'T' + (t.time || '12:00:00'));
+        if (isNaN(dt.getTime())) dt = new Date(d);
+        return Math.floor(dt.getTime() / 1000);
+    }
+
+    function hasDisplayName() { return !!(displayName && displayName.trim()); }
+
+    function hasDisclaimerForPattern(patternId) {
+        var acks = JSON.parse(localStorage.getItem('tl_pattern_ack') || '{}');
+        if (acks[patternId] && acks[patternId].ver === DISCLAIMER_VER) return true;
+        if (patternId === activePatternId && localStorage.getItem('tl_disclaimer_' + DISCLAIMER_VER)) return true;
+        return false;
+    }
+
+    function checklistCompleteForPattern(patternId) {
+        var p = PATTERNS[patternId];
+        if (!p || !p.checklist) return false;
+        var ck = patternChecklist[patternId] || {};
+        for (var i = 0; i < p.checklist.length; i++) {
+            if (!ck[patternId + '-' + i]) return false;
+        }
+        return true;
+    }
+
+    function resolveStage1PatternId() {
+        if (stage1PatternId && PATTERNS[stage1PatternId]) return stage1PatternId;
+        if (activePatternId && PATTERNS[activePatternId] && !stage1Complete) {
+            stage1PatternId = activePatternId;
+            localStorage.setItem('tl_stage1_pattern', stage1PatternId);
+        }
+        return stage1PatternId || activePatternId || '';
+    }
+
+    function checklistCountForPattern(patternId) {
+        var p = PATTERNS[patternId];
+        if (!p || !p.checklist) return { done: 0, total: 0 };
+        var ck = patternChecklist[patternId] || {};
+        var done = 0;
+        for (var i = 0; i < p.checklist.length; i++) {
+            if (ck[patternId + '-' + i]) done++;
+        }
+        return { done: done, total: p.checklist.length };
+    }
+
+    function isStage1Complete() { return stage1Complete; }
+
+    function updateProfileUI() {
+        var card = document.getElementById('profile-card');
+        if (!card) return;
+        if (emailVerified && hasDisplayName()) {
+            card.style.display = 'block';
+            document.getElementById('profile-name').textContent = displayName;
+            document.getElementById('profile-email').textContent = userEmail;
+            document.getElementById('profile-status').textContent = hasPaidAccess()
+                ? 'Stage 4 path · Paid tier'
+                : hasMemberAccess()
+                    ? 'Stage 2 complete · Member'
+                    : stage1Complete
+                        ? 'Stage 1 complete · Verified learner'
+                        : 'Verified learner · Stage 1 in progress';
+        } else {
+            card.style.display = 'none';
+        }
+        updateStage1Banner();
+    }
+
+    function updateStage1Banner() {
+        var el = document.getElementById('stage1-banner');
+        if (!el) return;
+        if (!stage1Complete) evaluateStage1();
+        if (stage1Complete) {
+            el.style.display = 'block';
+            el.className = 'stage1-banner done';
+            el.innerHTML = '<strong>Stage 1 complete — good</strong><br>Verified learner <strong>' + displayName + '</strong>. Checklist finished.' +
+                (hasMemberAccess() ? ' <strong>Stage 2 (Member) also complete.</strong>' : ' Unlock Stage 2 on Course Path with <code>TAPE-DEMO</code>.') +
+                ' Keep journaling here — educational only.';
+        } else if (emailVerified && hasDisplayName() && (activePatternId || stage1PatternId)) {
+            var pid = resolveStage1PatternId();
+            var prog = checklistCountForPattern(pid);
+            el.style.display = 'block';
+            el.className = 'stage1-banner';
+            if (prog.done >= prog.total && prog.total > 0) {
+                el.innerHTML = 'Checklist done (' + prog.done + '/' + prog.total + ') — finishing Stage 1… activate pattern with disclaimer if needed.';
+            } else {
+                el.innerHTML = 'Stage 1 in progress — checklist <strong>' + prog.done + '/' + prog.total + '</strong> — tick ①②③ below. <button type="button" class="btn-tour-start" onclick="continueCurrentModule()">Continue →</button>';
+            }
+        } else {
+            el.style.display = 'block';
+            el.className = 'stage1-banner';
+            el.innerHTML = 'New here? <button type="button" class="btn-tour-start" onclick="continueCurrentModule()">Continue Stage 1 →</button> or <button type="button" class="btn-tour-start" onclick="startStage1Tour()">guided highlights</button>.';
+        }
+    }
+
+    function evaluateStage1() {
+        if (stage1Complete) return;
+        var pid = resolveStage1PatternId();
+        if (!emailVerified || !hasDisplayName() || !pid) return;
+        if (!hasDisclaimerForPattern(pid)) return;
+        if (!checklistCompleteForPattern(pid)) return;
+        stage1Complete = true;
+        localStorage.setItem('tl_stage1_complete', 'true');
+        localStorage.setItem('tl_stage1_pattern', pid);
+        updateProfileUI();
+        updateNavLabels();
+        syncCourseModules();
+        renderCoursePath();
+        setStatus('Stage 1 complete — good, ' + displayName + '!');
+    }
+
+    function tierRank(t) { return t === 'paid' ? 3 : t === 'member' ? 2 : 1; }
+    function hasTierAccess(required) { return tierRank(userTier) >= tierRank(required); }
+    function isEmailVerified() { return emailVerified; }
+    function hasMemberAccess() { return hasTierAccess('member') || (emailVerified && socialAck); }
+    function hasPaidAccess() { return hasTierAccess('paid'); }
+    function hasBrokerHandoff() { return hasPaidAccess(); }
+    function effectiveTierForPattern(p) {
+        if (p.tier === 'paid') return hasPaidAccess();
+        if (p.tier === 'member') return hasMemberAccess();
+        return true;
+    }
+    function isSheetUnlocked(wsId) {
+        var ws = WORKSPACES[wsId];
+        if (ws.tier === 'paid') return hasPaidAccess();
+        if (ws.tier === 'member') return hasMemberAccess();
+        return true;
+    }
+    function isPatternAccessible(p) { return effectiveTierForPattern(p); }
+
+    function syncTierFromProgress() {
+        if (hasPaidAccess()) userTier = 'paid';
+        else if (hasMemberAccess()) userTier = 'member';
+        else userTier = 'free';
+        localStorage.setItem('tl_tier', userTier);
+    }
+
+    function updateNavLabels() {
+        var course = document.getElementById('nav-course');
+        if (!course) return;
+        var label = 'Course Path';
+        if (hasPaidAccess()) label += '<span class="nav-check"> · S3+</span>';
+        else if (hasMemberAccess()) label += '<span class="nav-check"> · S2 ✓</span>';
+        else if (stage1Complete) label += '<span class="nav-check"> · S1 ✓</span>';
+        course.innerHTML = label;
+    }
+
+    function updateTierUI() {
+        syncTierFromProgress();
+        var labels = { free: 'Free', member: 'Member', paid: 'Paid' };
+        document.getElementById('tier-pill').textContent = 'Tier: ' + (labels[userTier] || 'Free');
+        updateProfileUI();
+        updateXPUI();
+        updateNavLabels();
+        rebuildWsSelect();
+        renderPatternLab();
+        renderCoursePath();
+        updatePartnerUI();
+        updateBrokerCTAs();
+    }
+
+    function updateXPUI() {
+        var el = document.getElementById('xp-pill');
+        if (el) el.textContent = 'Tape points: ' + tapeXP;
+    }
+
+    window.openPointsGuide = function () {
+        document.getElementById('points-overlay').classList.add('show');
+    };
+    window.closePointsGuide = function () {
+        document.getElementById('points-overlay').classList.remove('show');
+    };
+
+    function awardXP(amount, reason) {
+        if (!amount) return;
+        tapeXP += amount;
+        localStorage.setItem('tl_xp', String(tapeXP));
+        updateXPUI();
+        renderCoursePath();
+        if (reason) setStatus('+' + amount + ' Tape points · ' + reason);
+    }
+
+    function updateDropZone(p) {
+        var zone = document.getElementById('pattern-drop-zone');
+        if (!zone) return;
+        if (!p) {
+            zone.classList.remove('active');
+            zone.innerHTML = '<strong>Drop zone</strong>Click <em>Preview</em> on a pattern card to drop it here and open the walkthrough.';
+            return;
+        }
+        zone.classList.add('active');
+        zone.innerHTML = '<strong>Dropped: ' + p.name + '</strong>' + p.desc + '<br><span style="font-size:11px;color:var(--gold);">Preview open — educational framework only</span>';
+    }
+
+    window.previewPattern = function (patternId) {
+        var p = PATTERNS[patternId];
+        if (!p) return;
+        previewPatternId = patternId;
+        updateDropZone(p);
+        document.getElementById('preview-title').textContent = p.name;
+        document.getElementById('preview-sub').textContent = p.sheetLabel + ' · Example walkthrough — not a buy/sell signal';
+        document.getElementById('preview-steps').innerHTML = [
+            { n: 1, t: 'Learn', items: p.learn },
+            { n: 2, t: 'What often happens', items: p.happens },
+            { n: 3, t: 'Checklist before you log', items: p.checklist.map(ckText) }
+        ].map(function (step) {
+            return '<div class="preview-step"><em>Step ' + step.n + ' · ' + step.t + '</em><ul style="margin:8px 0 0;padding-left:18px;">' +
+                step.items.map(function (x, i) {
+                    var item = step.n === 3 ? p.checklist[i] : x;
+                    var line = step.n === 3 && item && item.label ? CK_NUM[i] + ' [' + item.label + '] ' + ckText(item) : x;
+                    return '<li>' + line + '</li>';
+                }).join('') + '</ul></div>';
+        }).join('');
+        var ex = p.example;
+        document.getElementById('preview-example').innerHTML = ex
+            ? '<strong>Example journal (V2):</strong> ' + ex.symbol + ' entry ' + fmtMoney(ex.entry) + ' → exit ' + fmtMoney(ex.exit) + '. ' + ex.note
+            : 'Example chart markers available after preview.';
+        document.getElementById('preview-train-btn').disabled = !isPatternAccessible(p);
+        document.getElementById('preview-overlay').classList.add('show');
+        if (previewsDone.indexOf(patternId) === -1) {
+            previewsDone.push(patternId);
+            localStorage.setItem('tl_previews', JSON.stringify(previewsDone));
+            awardXP(XP.preview, 'pattern preview');
+        }
+    };
+
+    window.closePreview = function () {
+        document.getElementById('preview-overlay').classList.remove('show');
+        previewPatternId = null;
+        updateDropZone(null);
+    };
+
+    window.startTrainingFromPreview = function () {
+        if (!previewPatternId) return;
+        closePreview();
+        requestActivatePattern(previewPatternId);
+    };
+
+    window.viewPatternExample = function () {
+        var p = previewPatternId ? PATTERNS[previewPatternId] : null;
+        if (!p || !p.example) return;
+        closePreview();
+        exampleMode = true;
+        selectedCompleted = null;
+        if (p.example.symbol !== activeSymbol) selectSymbol(p.example.symbol);
+        switchTab('radar');
+        setTimeout(function () { showExampleHighlight(p); }, 300);
+        setStatus('Example markers only — not a signal · ' + p.name);
+    };
+
+    function showExampleHighlight(p) {
+        if (!candleSeries || !lwChart || !p.example) return;
+        clearHighlight();
+        var ex = p.example, t1, t2;
+        if (candles.length >= 2) {
+            t1 = candles[Math.max(0, candles.length - 24)].time;
+            t2 = candles[Math.max(0, candles.length - 8)].time;
+        } else {
+            var now = Math.floor(Date.now() / 1000);
+            t1 = now - 3600; t2 = now - 900;
+        }
+        var win = ex.exit >= ex.entry;
+        var lo = Math.min(ex.entry, ex.exit), hi = Math.max(ex.entry, ex.exit);
+        activePriceLines.push(candleSeries.createPriceLine({ price: ex.entry, color: '#26a69a', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'Example entry' }));
+        activePriceLines.push(candleSeries.createPriceLine({ price: ex.exit, color: '#ff5a5f', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'Example exit' }));
+        if (!bandSeries) {
+            bandSeries = lwChart.addBaselineSeries({ baseValue: { type: 'price', price: lo }, topFillColor1: 'rgba(38,166,154,0.22)', topFillColor2: 'rgba(38,166,154,0.22)', bottomFillColor1: 'transparent', bottomFillColor2: 'transparent', lineVisible: false, priceLineVisible: false, lastValueVisible: false });
+        }
+        bandSeries.applyOptions({ baseValue: { type: 'price', price: lo }, topFillColor1: win ? 'rgba(38,166,154,0.18)' : 'rgba(255,90,95,0.18)', topFillColor2: win ? 'rgba(38,166,154,0.18)' : 'rgba(255,90,95,0.18)' });
+        bandSeries.setData([{ time: t1, value: hi }, { time: t2, value: hi }]);
+        candleSeries.setMarkers([
+            { time: t1, position: 'belowBar', color: '#26a69a', shape: 'arrowUp', text: 'EXAMPLE BUY' },
+            { time: t2, position: 'aboveBar', color: '#ff5a5f', shape: 'arrowDown', text: 'EXAMPLE SELL' }
+        ]);
+        try { lwChart.timeScale().setVisibleRange({ from: t1 - 120, to: t2 + 120 }); } catch (e) {}
+    }
+
+    window.clearReview = function () {
+        selectedCompleted = null;
+        exampleMode = false;
+        clearHighlight();
+        renderJournalReview();
+    };
+
+    window.demoTier = function (tier) {
+        userTier = tier;
+        localStorage.setItem('tl_tier', tier);
+        if (tier === 'member' || tier === 'paid') {
+            emailVerified = true;
+            localStorage.setItem('tl_email_verified', 'true');
+            if (!userEmail) { userEmail = 'demo@tapeledger.local'; localStorage.setItem('tl_user_email', userEmail); }
+            if (!hasDisplayName()) { displayName = 'Demo User'; localStorage.setItem('tl_display_name', displayName); }
+        }
+        updateTierUI();
+        updatePartnerUI();
+        updateBrokerCTAs();
+        setStatus('Demo tier set to: ' + tier + (tier === 'paid' ? ' — Stage 4 broker handoff unlocked' : ''));
+    };
+
+    window.openEmailModal = function (cb) {
+        emailCallback = cb || null;
+        document.getElementById('verify-email-input').value = userEmail || '';
+        document.getElementById('verify-code-input').value = '';
+        document.getElementById('email-demo-hint').textContent = '';
+        showEmailStep('send');
+        document.getElementById('email-overlay').classList.add('show');
+    };
+    window.closeEmailModal = function () {
+        document.getElementById('email-overlay').classList.remove('show');
+        emailCallback = null;
+        pendingEmailCode = null;
+    };
+    window.showEmailStep = function (step) {
+        document.getElementById('email-step-send').classList.toggle('active', step === 'send');
+        document.getElementById('email-step-code').classList.toggle('active', step === 'code');
+        document.getElementById('email-step-name').classList.toggle('active', step === 'name');
+    };
+    window.sendEmailCode = function () {
+        var email = document.getElementById('verify-email-input').value.trim();
+        if (!email || email.indexOf('@') < 1) { setStatus('Enter a valid email.'); return; }
+        pendingEmailAddr = email;
+        pendingEmailCode = String(Math.floor(100000 + Math.random() * 900000));
+        sessionStorage.setItem('tl_pending_otp', JSON.stringify({ code: pendingEmailCode, email: email, exp: Date.now() + 600000 }));
+        document.getElementById('verify-email-display').textContent = email;
+        document.getElementById('email-demo-hint').textContent = 'Demo mode — your code: ' + pendingEmailCode + ' (real email at launch)';
+        showEmailStep('code');
+        setStatus('Demo OTP sent — code: ' + pendingEmailCode);
+    };
+    window.confirmEmailCode = function () {
+        var entered = document.getElementById('verify-code-input').value.trim();
+        var stored = null;
+        try { stored = JSON.parse(sessionStorage.getItem('tl_pending_otp') || 'null'); } catch (e) {}
+        var valid = entered && pendingEmailCode && entered === pendingEmailCode;
+        if (!valid && stored && stored.code === entered && stored.exp > Date.now()) valid = true;
+        if (!valid) { setStatus('Invalid or expired code.'); return; }
+        emailVerified = true;
+        userEmail = pendingEmailAddr || (stored && stored.email) || userEmail;
+        localStorage.setItem('tl_email_verified', 'true');
+        localStorage.setItem('tl_user_email', userEmail);
+        sessionStorage.removeItem('tl_pending_otp');
+        if (!hasDisplayName()) {
+            document.getElementById('verify-name-input').value = '';
+            showEmailStep('name');
+            setStatus('Email verified — choose your display name');
+            syncCourseModules();
+            return;
+        }
+        closeEmailModal();
+        updateTierUI();
+        syncCourseModules();
+        setStatus('Email verified: ' + userEmail);
+        if (emailCallback) { var fn = emailCallback; emailCallback = null; fn(); }
+    };
+
+    window.saveDisplayName = function () {
+        var name = document.getElementById('verify-name-input').value.trim();
+        if (!name || name.length < 2) { setStatus('Enter a display name (2+ characters).'); return; }
+        displayName = name;
+        localStorage.setItem('tl_display_name', displayName);
+        closeEmailModal();
+        updateTierUI();
+        syncCourseModules();
+        setStatus('Profile saved — welcome, ' + displayName);
+        if (emailCallback) { var fn = emailCallback; emailCallback = null; fn(); }
+    };
+
+    function setupSocialLinks() {
+        var ig = document.getElementById('link-instagram'), fb = document.getElementById('link-facebook');
+        if (SOCIAL_LAUNCHED) {
+            ig.href = SOCIAL_LINKS.instagram; ig.textContent = 'Follow on Instagram';
+            fb.href = SOCIAL_LINKS.facebook; fb.textContent = 'Like on Facebook';
+            ig.classList.remove('disabled'); fb.classList.remove('disabled');
+            document.getElementById('social-soon-banner').innerHTML = '<strong>Follow us</strong> then enter the weekly code from our posts to unlock Member.';
+        }
+    }
+    function setupPartnerLinks() { /* hrefs set via openBrokerLink at Stage 4 */ }
+    function updatePartnerUI() {
+        var unlocked = hasBrokerHandoff();
+        var lockedEl = document.getElementById('partner-locked');
+        var activeEl = document.getElementById('partner-active');
+        if (lockedEl) lockedEl.style.display = unlocked ? 'none' : 'block';
+        if (activeEl) activeEl.style.display = unlocked ? 'block' : 'none';
+    }
+    window.goCourse = function () { switchTab('course'); };
+    window.openBrokerLink = function (url, label) {
+        if (!hasBrokerHandoff()) { goCourse(); return; }
+        if (!confirm('Opening ' + (label || 'broker') + ' in a new tab.\n\nReturn to TapeLedger to log your journal entry.')) return;
+        window.open(url, '_blank', 'noopener,noreferrer');
+    };
+    window.openBrokerSwyftx = function () { openBrokerLink(PARTNER_LINKS.swyftx, 'Swyftx'); };
+    window.openBrokerStake = function () { openBrokerLink(PARTNER_LINKS.stake, 'Stake'); };
+    function isCryptoSymbol(sym) { return !!binanceIdFor(sym); }
+    function isAsxSymbol(sym) { return ['aud', 'energy'].indexOf(activeWorkspace) >= 0 && /^[A-Z]{2,6}$/.test(sym); }
+    function yahooDelayMode(symbol) {
+        if (isAsxSymbol(symbol)) return 'asx-delayed';
+        if (symbol === 'XAUUSD' || symbol === 'USOUSD') return 'delayed';
+        return 'delayed';
+    }
+    function resolveYahooPriceMode(symbol, meta) {
+        if (feedMode === 'yahoo-close') return 'close';
+        if (isAsxSymbol(symbol)) {
+            if (feedMode === 'yahoo-asx' || meta.marketState === 'REGULAR') return 'asx-delayed';
+            if (!meta.marketState && candles.length > 1) return 'asx-delayed';
+            return 'close';
+        }
+        if (meta.marketState === 'REGULAR') return yahooDelayMode(symbol);
+        return 'close';
+    }
+    function priceBadgeHtml(mode) {
+        if (mode === 'close') return '<span class="live-badge delayed">LAST CLOSE</span>';
+        if (mode === 'asx-delayed') return '<span class="live-badge delayed">~20 MIN DELAYED</span>';
+        if (mode === 'delayed') return '<span class="live-badge delayed">DELAYED</span>';
+        if (mode === 'unavailable') return '<span class="live-badge delayed">NO FEED</span>';
+        return '<span class="live-badge">LIVE</span>';
+    }
+    function partnerStakeUrl(sym) {
+        if (isAsxSymbol(sym)) return PARTNER_LINKS.stakeTrade + encodeURIComponent(sym + '.AX');
+        return PARTNER_LINKS.stake;
+    }
+    function partnerSwyftxUrl(sym) {
+        var m = sym.match(/^([A-Z]{2,10})USD$/);
+        if (m) return PARTNER_LINKS.swyftxTrade + encodeURIComponent(m[1]) + '/AUD';
+        return PARTNER_LINKS.swyftx;
+    }
+    function updateBrokerCTAs() {
+        var tag = document.getElementById('broker-tagline'), row = document.getElementById('broker-cta-row');
+        if (!tag || !row) return;
+        if (!hasBrokerHandoff()) {
+            tag.textContent = isAsxSymbol(activeSymbol)
+                ? 'Journal here · ASX chart ~20 min delayed (or last close). Stage 4 unlocks Stake live tape.'
+                : 'Journal here · live broker handoff unlocks at Stage 4 after paid subscription.';
+            row.innerHTML = '<button type="button" class="btn-broker locked" onclick="goCourse()">Stage 4 — unlock live tape</button>';
+            return;
+        }
+        var sym = activeSymbol, ctas = [];
+        if (isAsxSymbol(sym)) {
+            tag.textContent = 'Journal here · ASX chart is delayed. Open Stake for the live tape (new tab).';
+            ctas.push({ href: partnerStakeUrl(sym), label: 'View ' + sym + ' live on Stake', primary: true });
+        } else if (isCryptoSymbol(sym)) {
+            var liveHere = feedMode === 'binance-ws';
+            tag.textContent = liveHere ? 'Crypto streams here for journaling · execute on Swyftx (new tab).' : 'Journal here · Swyftx for live crypto execution.';
+            ctas.push({ href: partnerSwyftxUrl(sym), label: 'Trade on Swyftx', primary: true });
+        } else if (sym === 'XAUUSD' || sym === 'USOUSD') {
+            tag.textContent = 'Gold/oil delayed for context · Stake for live charts when ready to execute.';
+            ctas.push({ href: PARTNER_LINKS.stake, label: 'Open Stake', primary: true });
+            ctas.push({ href: PARTNER_LINKS.swyftx, label: 'Open Swyftx', primary: false });
+        } else {
+            tag.textContent = 'Journal here · live prices open on your broker (new tab).';
+            if (activeWorkspace === 'aud' || activeWorkspace === 'energy') ctas.push({ href: PARTNER_LINKS.stake, label: 'Open Stake', primary: true });
+            else ctas.push({ href: PARTNER_LINKS.swyftx, label: 'Open Swyftx', primary: true });
+        }
+        row.innerHTML = ctas.map(function (c) {
+            var esc = function (s) { return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); };
+            return '<button type="button" class="btn-broker' + (c.primary ? ' primary' : '') + '" onclick="openBrokerLink(\'' + esc(c.href) + '\',\'' + esc(c.label) + '\')">' + c.label + '</button>';
+        }).join('');
+    }
+    window.openSocialModal = function () {
+        if (!isEmailVerified()) { openEmailModal(openSocialModal); return; }
+        setupSocialLinks();
+        document.getElementById('social-follow-check').checked = socialAck;
+        document.getElementById('social-code-input').value = '';
+        updateSocialUnlock();
+        document.getElementById('social-overlay').classList.add('show');
+    };
+    window.closeSocialModal = function () { document.getElementById('social-overlay').classList.remove('show'); };
+    window.updateSocialUnlock = function () {
+        var code = document.getElementById('social-code-input').value.trim().toUpperCase();
+        var checked = document.getElementById('social-follow-check').checked;
+        var codeOk = code === MEMBER_PREVIEW_CODE || code === MEMBER_LAUNCH_CODE;
+        document.getElementById('social-unlock-btn').disabled = !(checked && codeOk);
+    };
+    window.unlockMemberStage = function () {
+        var code = document.getElementById('social-code-input').value.trim().toUpperCase();
+        if (code !== MEMBER_PREVIEW_CODE && code !== MEMBER_LAUNCH_CODE) return;
+        socialAck = true;
+        localStorage.setItem('tl_social_ack', 'true');
+        localStorage.setItem('tl_member_code_used', code);
+        closeSocialModal();
+        updateTierUI();
+        switchTab('course');
+        setStatus('Member stage unlocked — Stage 2 complete · Energy Playbook in Pattern Lab');
+    };
+
+    window.goPatterns = function () { switchTab('patterns'); };
+    window.goRadar = function () { switchTab('radar'); };
+    window.goReview = function () { switchTab('radar'); setJournalView('done'); };
+    window.goCoach = function () { switchTab('coach'); };
+    window.scrollToJourney = function () {
+        switchTab('course');
+        setTimeout(function () {
+            var j = document.getElementById('stage1-journey');
+            if (j) j.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 80);
+    };
+    window.toggleCourseModule = function (id) {
+        if (getModuleCompletionState()[id]) return;
+        courseModules[id] = !courseModules[id];
+        localStorage.setItem('tl_course_modules', JSON.stringify(courseModules));
+        renderCoursePath();
+    };
+    window.togglePillar = function (id) {
+        var el = document.getElementById('pillar-' + id);
+        if (el) el.classList.toggle('open');
+    };
+    window.runJourneyAction = function (fn) {
+        if (fn === 'openEmailModal') {
+            if (emailVerified && hasDisplayName()) { goRadar(); return; }
+            openEmailModal();
+            return;
+        }
+        if (fn === 'goRadar') goRadar();
+        else if (fn === 'goPatterns') goPatterns();
+        else if (fn === 'goReview') goReview();
+    };
+
+    function firstIncompleteModuleIdx() {
+        var state = getModuleCompletionState();
+        for (var i = 0; i < STAGE1_JOURNEY.length; i++) {
+            var id = STAGE1_JOURNEY[i].id;
+            if (!state[id] && !courseModules[id]) return i;
+        }
+        return STAGE1_JOURNEY.length - 1;
+    }
+
+    function currentModuleLabel() {
+        var idx = firstIncompleteModuleIdx();
+        var j = STAGE1_JOURNEY[idx];
+        return j ? 'Module ' + (idx + 1) + ' of 7 — ' + j.title : 'Stage 1 complete';
+    }
+
+    window.continueCurrentModule = function () {
+        if (stage1Complete) { switchTab('course'); return; }
+        var idx = firstIncompleteModuleIdx();
+        var j = STAGE1_JOURNEY[idx];
+        if (!j) return;
+        runJourneyAction(j.action);
+        setStatus('Stage 1 · ' + j.navHint);
+    };
+
+    function getModuleCompletionState() {
+        var pid = resolveStage1PatternId();
+        return {
+            j1: emailVerified && hasDisplayName(),
+            j2: localStorage.getItem('tl_seen_radar') === 'true',
+            j3: !!(activePatternId || stage1PatternId),
+            j4: !!(pid && checklistCompleteForPattern(pid)),
+            j5: trades.length > 0,
+            j6: localStorage.getItem('tl_seen_review') === 'true' && trades.length > 0,
+            j7: stage1Complete
+        };
+    }
+
+    function syncCourseModules(silent) {
+        var state = getModuleCompletionState();
+        var changed = false;
+        var moduleXp = JSON.parse(localStorage.getItem('tl_module_xp') || '[]');
+        Object.keys(state).forEach(function (id) {
+            if (state[id] && !courseModules[id]) {
+                courseModules[id] = true;
+                changed = true;
+                if (moduleXp.indexOf(id) === -1) {
+                    moduleXp.push(id);
+                    localStorage.setItem('tl_module_xp', JSON.stringify(moduleXp));
+                    awardXP(XP.module, 'Stage 1 module');
+                }
+            }
+        });
+        if (changed) {
+            localStorage.setItem('tl_course_modules', JSON.stringify(courseModules));
+            if (!silent && document.getElementById('course-stages')) renderCoursePath();
+            maybeAdvanceTour();
+        }
+    }
+
+    function clearTourHighlight() {
+        document.querySelectorAll('.tour-target').forEach(function (el) {
+            el.classList.remove('tour-target', 'guide-highlight');
+        });
+    }
+
+    function firstIncompleteTourStep() {
+        var state = getModuleCompletionState();
+        for (var i = 0; i < STAGE1_TOUR.length; i++) {
+            if (!state[STAGE1_TOUR[i].module]) return i;
+        }
+        return 0;
+    }
+
+    window.startStage1Tour = function (stepIdx) {
+        if (stage1Complete) { setStatus('Stage 1 already complete.'); return; }
+        tourActive = true;
+        tourStepIdx = typeof stepIdx === 'number' ? stepIdx : firstIncompleteTourStep();
+        localStorage.setItem('tl_tour_seen', 'true');
+        document.getElementById('tour-overlay').classList.add('active');
+        showTourStep(tourStepIdx);
+    };
+
+    function showTourStep(idx) {
+        tourStepIdx = idx;
+        var step = STAGE1_TOUR[idx];
+        if (!step) { endTour(); return; }
+        document.getElementById('tour-step-num').textContent = 'Step ' + (idx + 1) + ' of ' + STAGE1_TOUR.length;
+        document.getElementById('tour-title').textContent = step.title;
+        document.getElementById('tour-text').textContent = step.text;
+        document.getElementById('tour-next-btn').textContent = step.nextLabel || 'Next';
+        if (step.tab) switchTab(step.tab);
+        setTimeout(function () {
+            clearTourHighlight();
+            var target = document.getElementById(step.target);
+            if (target && target.offsetParent !== null) {
+                target.classList.add('tour-target');
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else if (step.target === 'profile-card' && (!emailVerified || !hasDisplayName())) {
+                var pill = document.getElementById('tier-pill');
+                if (pill) { pill.classList.add('tour-target'); pill.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            } else if (step.target === 'stage1-banner') {
+                var banner = document.getElementById('stage1-banner');
+                if (banner && banner.style.display !== 'none') banner.classList.add('tour-target');
+            }
+        }, step.tab ? 120 : 40);
+    }
+
+    window.nextTourStep = function () {
+        var step = STAGE1_TOUR[tourStepIdx];
+        if (step && step.action === 'openEmailModal') {
+            if (emailVerified && hasDisplayName()) {
+                if (tourStepIdx < STAGE1_TOUR.length - 1) showTourStep(tourStepIdx + 1);
+                else endTour();
+                return;
+            }
+            openEmailModal(function () { syncCourseModules(); maybeAdvanceTour(); });
+            return;
+        }
+        if (step && step.module === 'j3') { switchTab('patterns'); showTourStep(tourStepIdx); return; }
+        if (step && step.module === 'j6') { switchTab('radar'); setJournalView('done'); syncCourseModules(); }
+        if (tourStepIdx >= STAGE1_TOUR.length - 1) { endTour(); return; }
+        showTourStep(tourStepIdx + 1);
+    };
+
+    function maybeAdvanceTour() {
+        if (!tourActive) return;
+        var step = STAGE1_TOUR[tourStepIdx];
+        if (!step) return;
+        var state = getModuleCompletionState();
+        if (state[step.module] && tourStepIdx < STAGE1_TOUR.length - 1) showTourStep(tourStepIdx + 1);
+        else if (state.j7) endTour();
+    }
+
+    window.skipTour = function () {
+        localStorage.setItem('tl_tour_skipped', 'true');
+        endTour();
+    };
+
+    function endTour() {
+        tourActive = false;
+        clearTourHighlight();
+        document.getElementById('tour-overlay').classList.remove('active');
+        if (stage1Complete) localStorage.setItem('tl_tour_done', 'true');
+    }
+
+    function isPillarUnlocked(pillar) {
+        var s = pillar.stageMin || 1;
+        if (s <= 1) return true;
+        if (s === 2) return hasMemberAccess();
+        if (s === 3) return hasPaidAccess();
+        if (s === 4) return hasBrokerHandoff();
+        return false;
+    }
+
+    function journeyDoneCount() {
+        var n = 0;
+        var state = getModuleCompletionState();
+        STAGE1_JOURNEY.forEach(function (j) { if (courseModules[j.id] || state[j.id]) n++; });
+        return n;
+    }
+
+    function renderStage1ModulesInner() {
+        var state = getModuleCompletionState();
+        var done = journeyDoneCount();
+        var total = STAGE1_JOURNEY.length;
+        var currentIdx = firstIncompleteModuleIdx();
+        var rows = STAGE1_JOURNEY.map(function (j, i) {
+            var isDone = !!(state[j.id] || courseModules[j.id]);
+            var isCurrent = i === currentIdx && !stage1Complete;
+            var icon = isDone ? '✓' : (isCurrent ? '→' : '○');
+            var iconCls = isDone ? 'done' : (isCurrent ? 'current' : 'pending');
+            var rowCls = 'mod-row' + (isCurrent ? ' mod-current' : '') + (isDone ? ' mod-done' : '') + (!isDone && !isCurrent ? ' mod-later' : '');
+            var hint = isDone && j.id === 'j1' ? 'Profile verified' : j.navHint;
+            if (isDone && j.id === 'j1') hint = '✓ profile verified';
+            return '<div class="' + rowCls + '">' +
+                '<span class="mod-icon ' + iconCls + '">' + icon + '</span>' +
+                '<div class="mod-row-body"><div class="mod-row-title">' + (i + 1) + '. ' + j.title + '</div>' +
+                '<div class="mod-nav-hint">' + hint + '</div></div></div>';
+        }).join('');
+        var cur = STAGE1_JOURNEY[currentIdx];
+        var continueLbl = cur ? 'Continue → ' + cur.navHint.replace(/^→\s*/, '') : 'Stage 1 complete';
+        return '<div class="stage1-modules" id="stage1-journey">' +
+            '<div class="mod-you-here">You are here: Module ' + (currentIdx + 1) + ' of ' + total + (cur ? ' — ' + cur.title : '') + '</div>' +
+            '<div class="journey-progress">' + done + ' / ' + total + ' complete</div>' +
+            rows +
+            (stage1Complete ? '' : '<button type="button" class="btn-continue-mod" onclick="continueCurrentModule()">' + continueLbl + '</button>') +
+            '<p style="font-size:10px;color:var(--text-muted);margin:10px 0 0;"><button type="button" class="btn-tour-start" onclick="startStage1Tour()">Optional: gold highlight tour</button></p>' +
+            '</div>';
+    }
+
+    function renderCurriculumLibrary() {
+        var html = '<div class="curriculum-section"><div class="curriculum-head">Full curriculum library — five pillars</div>';
+        CURRICULUM_PILLARS.forEach(function (p) {
+            var unlocked = isPillarUnlocked(p);
+            var lockLbl = unlocked ? 'Stage ' + p.stageMin + '+' : 'Locked — Stage ' + p.stageMin;
+            html += '<div class="curriculum-pillar' + (unlocked ? '' : ' locked') + '" id="pillar-' + p.id + '">' +
+                '<div class="pillar-head" onclick="togglePillar(\'' + p.id + '\')">' +
+                '<h4>' + p.num + '. ' + p.title + '</h4>' +
+                '<span class="pillar-meta">' + lockLbl + ' <span class="pillar-chevron">▶</span></span></div>' +
+                '<div class="pillar-body"><p class="pillar-teaser">' + p.teaser + '</p>' +
+                '<p class="pillar-soon">Phase B: full module breakdown with topic lists and TapeLedger links.</p></div></div>';
+        });
+        return html + '</div>';
+    }
+
+    function renderCoursePath() {
+        syncCourseModules(true);
+        var el = document.getElementById('course-stages');
+        if (!el) return;
+        var stages = COURSE_STAGES.map(function (s) {
+            var st = getStageStatus(s);
+            if (s.id === 2 && !hasMemberAccess() && !stage1Complete) {
+                return '<div class="stage-card locked compact">' +
+                    '<div class="stage-num">Stage ' + s.id + '</div>' +
+                    '<span class="stage-status locked">After Stage 1</span>' +
+                    '<h4>' + s.title + '</h4>' +
+                    '<p>Finish Stage 1 first, then use <code>TAPE-DEMO</code> on Unlock Member.</p></div>';
+            }
+            if (s.id > 2 && !hasMemberAccess()) {
+                return '<div class="stage-card locked compact">' +
+                    '<div class="stage-num">Stage ' + s.id + '</div>' +
+                    '<span class="stage-status locked">Locked</span>' +
+                    '<h4>' + s.title + '</h4>' +
+                    '<p>Complete earlier stages first.</p></div>';
+            }
+            var statusLbl = st === 'done' ? 'Complete' : st === 'current' ? 'Current step' : 'Locked';
+            var inner = '';
+            if (s.id === 1 && !stage1Complete) inner = renderStage1ModulesInner();
+            else if (s.id === 1 && stage1Complete) {
+                inner = '<p style="font-size:12px;color:var(--accent-green);margin-top:10px;"><strong>Stage 1 complete.</strong> ' +
+                    (hasMemberAccess() ? 'Stage 2 also complete — open Pattern Lab for Energy Playbook.' : 'Unlock Stage 2 with <code>TAPE-DEMO</code> on the Stage 2 card below.') + '</p>';
+            } else if (s.id === 2 && st === 'done') {
+                inner = '<p style="font-size:12px;color:var(--accent-green);margin-top:10px;"><strong>Member stage complete.</strong> Energy Playbook unlocked in Pattern Lab (3rd tab).</p>';
+            }
+            return '<div class="stage-card ' + st + '">' +
+                '<div class="stage-num">Stage ' + s.id + '</div>' +
+                '<span class="stage-status ' + st + '">' + statusLbl + '</span>' +
+                '<h4>' + s.title + '</h4><p>' + s.desc + '</p>' +
+                (s.id === 1 ? '' : '<p><strong>Requirements:</strong></p><ul class="stage-req">' + s.requirements.map(function (r) { return '<li>' + r + '</li>'; }).join('') + '</ul>') +
+                (s.id === 1 ? '' : '<p><strong>Unlocks:</strong> ' + s.unlocks.join(' · ') + '</p>') +
+                inner +
+                (st !== 'done' && s.action && s.id === 1 && !stage1Complete ? '' :
+                    (st !== 'done' && s.action ? '<div class="stage-actions"><button type="button" class="btn-activate" style="flex:none;padding:10px 18px;" onclick="' + s.action.fn + '()">' + s.action.label + '</button></div>' : '')) +
+                '</div>';
+        }).join('');
+        el.innerHTML = stages + renderCurriculumLibrary() + renderPointsAddon();
+    }
+
+    function getStageStatus(stage) {
+        if (stage.tier === 'free') {
+            if (stage1Complete) return 'done';
+            return 'current';
+        }
+        if (stage.tier === 'member') {
+            if (hasMemberAccess()) return 'done';
+            if (stage1Complete) return 'current';
+            return 'locked';
+        }
+        if (stage.tier === 'paid') {
+            if (hasPaidAccess()) return 'done';
+            if (hasMemberAccess()) return 'current';
+            return 'locked';
+        }
+        if (stage.tier === 'live') {
+            if (hasBrokerHandoff()) return 'done';
+            return 'locked';
+        }
+        return 'locked';
+    }
+
+    function renderPointsAddon() {
+        return '<div class="stage-card current">' +
+            '<div class="stage-num">Add-on</div>' +
+            '<span class="stage-status current">Tape points</span>' +
+            '<h4>Tape points — how to earn them</h4>' +
+            '<p>Learning rewards for preview, checklist discipline, and simulated journal logs. Not money, gambling, or profit scores.</p>' +
+            '<p><strong>Your balance:</strong> <span style="color:var(--accent-green);font-weight:700;">' + tapeXP + ' points</span></p>' +
+            '<table class="points-table"><thead><tr><th>Action</th><th>Where</th><th>Pts</th></tr></thead><tbody>' +
+            '<tr><td>First preview of a pattern</td><td>Pattern Lab → Preview</td><td>+' + XP.preview + '</td></tr>' +
+            '<tr><td>First activate of a pattern</td><td>Pattern Lab → Activate</td><td>+' + XP.activate + '</td></tr>' +
+            '<tr><td>Each checklist item (once)</td><td>Live Radar checklist</td><td>+' + XP.checklist + '</td></tr>' +
+            '<tr><td>Simulated journal log</td><td>Sidebar Buy / Sell</td><td>+' + XP.trade + ' (max 20)</td></tr>' +
+            '<tr><td>Stage 1 module (auto)</td><td>Course Path journey</td><td>+' + XP.module + ' each</td></tr>' +
+            '</tbody></table>' +
+            '<p style="font-size:11px;color:var(--text-muted);">Focus: entry quality and review discipline — not trading edge or signals for others.</p>' +
+            '<div class="stage-actions"><button type="button" class="btn-activate" style="flex:none;padding:10px 18px;" onclick="openPointsGuide()">Full guide</button></div>' +
+            '</div>';
+    }
+
+    function requireEmailThen(fn) {
+        if (isEmailVerified()) { fn(); return; }
+        openEmailModal(fn);
+    }
+
+    function requireTierForPattern(p, fn) {
+        if (p.tier === 'member' && !hasMemberAccess()) {
+            setStatus('Member stage required — follow social or use preview code');
+            openSocialModal();
+            return;
+        }
+        if (p.tier === 'paid' && !hasPaidAccess()) {
+            setStatus('Paid tier required — use Demo Paid for now');
+            switchTab('patterns');
+            return;
+        }
+        fn();
+    }
+
+    function rebuildWsSelect() {
+        var sel = document.getElementById('ws-select');
+        sel.innerHTML = Object.keys(WORKSPACES).map(function (id) {
+            if (!isSheetUnlocked(id)) return '';
+            return '<option value="' + id + '">' + WORKSPACES[id].label + '</option>';
+        }).join('');
+        if (!isSheetUnlocked(activeWorkspace)) {
+            activeWorkspace = Object.keys(WORKSPACES).find(isSheetUnlocked) || 'markets';
+            localStorage.setItem('tl_workspace', activeWorkspace);
+        }
+        sel.value = activeWorkspace;
+    }
+
+    window.updateDiscAccept = function () {
+        document.getElementById('disc-accept-btn').disabled = !document.getElementById('disc-agree').checked;
+    };
+    window.closeDisclaimer = function () {
+        document.getElementById('disc-overlay').classList.remove('show');
+        document.getElementById('disc-agree').checked = false;
+        updateDiscAccept();
+        pendingPatternId = null;
+        discCallback = null;
+    };
+    window.acceptDisclaimer = function () {
+        if (!document.getElementById('disc-agree').checked) return;
+        var acks = JSON.parse(localStorage.getItem('tl_pattern_ack') || '{}');
+        if (pendingPatternId) {
+            acks[pendingPatternId] = { ver: DISCLAIMER_VER, ts: Date.now() };
+            localStorage.setItem('tl_pattern_ack', JSON.stringify(acks));
+        }
+        localStorage.setItem('tl_disclaimer_' + DISCLAIMER_VER, Date.now().toString());
+        closeDisclaimer();
+        if (discCallback) discCallback();
+    };
+
+    function needsDisclaimer(patternId) {
+        var acks = JSON.parse(localStorage.getItem('tl_pattern_ack') || '{}');
+        return !acks[patternId] || acks[patternId].ver !== DISCLAIMER_VER;
+    }
+
+    function showDisclaimerThen(fn, patternId) {
+        pendingPatternId = patternId;
+        discCallback = fn;
+        document.getElementById('disc-agree').checked = false;
+        updateDiscAccept();
+        document.getElementById('disc-overlay').classList.add('show');
+    }
+
+    window.requestActivatePattern = function (patternId) {
+        var p = PATTERNS[patternId];
+        if (!p) return;
+        var proceed = function () {
+            requireTierForPattern(p, function () {
+                var go = function () { activatePattern(patternId); };
+                if (needsDisclaimer(patternId)) showDisclaimerThen(go, patternId);
+                else go();
+            });
+        };
+        requireEmailThen(proceed);
+    };
+
+    function activatePattern(patternId) {
+        var p = PATTERNS[patternId];
+        if (!p || !isPatternAccessible(p)) return;
+        activePatternId = patternId;
+        localStorage.setItem('tl_active_pattern', patternId);
+        if (!stage1Complete && !stage1PatternId) {
+            stage1PatternId = patternId;
+            localStorage.setItem('tl_stage1_pattern', patternId);
+        }
+        if (!isSheetUnlocked(p.sheet)) {
+            setStatus('Sheet locked — upgrade tier');
+            return;
+        }
+        switchWorkspace(p.sheet);
+        if (WORKSPACES[p.sheet].symbols.indexOf(activeSymbol) === -1) activeSymbol = WORKSPACES[p.sheet].symbols[0];
+        selectSymbol(activeSymbol);
+        updatePatternUI();
+        renderPatternLab();
+        switchTab('radar');
+        setStatus('Active pattern: ' + p.name + ' · Educational journal only');
+        var actXp = JSON.parse(localStorage.getItem('tl_activate_xp') || '[]');
+        if (actXp.indexOf(patternId) === -1) {
+            actXp.push(patternId);
+            localStorage.setItem('tl_activate_xp', JSON.stringify(actXp));
+            awardXP(XP.activate, 'pattern activated');
+        }
+        updateStage1Banner();
+        syncCourseModules();
+    }
+
+    function getActivePattern() { return activePatternId ? PATTERNS[activePatternId] : null; }
+
+    function updatePatternUI() {
+        var p = getActivePattern();
+        var badge = document.getElementById('active-pattern-badge');
+        var sel = document.getElementById('m-an');
+        if (!p) {
+            badge.style.display = 'none';
+            sel.innerHTML = '<option>Range / No edge</option><option>Bullish Expansion</option><option>Bearish Retracement</option>';
+            document.getElementById('pattern-checklist-wrap').innerHTML = '';
+            return;
+        }
+        badge.style.display = 'inline-block';
+        badge.textContent = 'Active: ' + p.name + ' · Educational · at your own risk';
+        sel.innerHTML = p.anchors.map(function (a) { return '<option>' + a + '</option>'; }).join('');
+        var ck = patternChecklist[p.id] || {};
+        document.getElementById('pattern-checklist-wrap').innerHTML =
+            '<div class="checklist-box"><div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:8px;">Before you log — tick each step yourself</div>' +
+            '<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Tap a row to highlight where to look. Then Buy/Sell in sidebar. Review later under Completed (FIFO).</div>' +
+            p.checklist.map(function (item, i) {
+                var key = p.id + '-' + i;
+                var checked = ck[key] ? ' checked' : '';
+                var zone = ckZone(item);
+                var zoneAttr = zone ? ' data-zone="' + zone + '"' : '';
+                var zoneClick = zone ? ' onclick="guideChecklistZone(\'' + zone + '\')"' : '';
+                var tag = ckLabel(item) ? '<span class="ck-zone">' + ckLabel(item) + '</span>' : '';
+                return '<label' + zoneClick + '><input type="checkbox" data-ck="' + key + '"' + zoneAttr + checked + ' onchange="toggleChecklist(this)">' +
+                    '<span><span class="ck-num">' + CK_NUM[i] + '</span>' + tag + ckText(item) + '</span></label>';
+            }).join('') + '</div>';
+        evaluateStage1();
+        updateStage1Banner();
+    }
+
+    window.toggleChecklist = function (el) {
+        var p = getActivePattern();
+        if (!p) return;
+        if (!patternChecklist[p.id]) patternChecklist[p.id] = {};
+        var key = el.getAttribute('data-ck');
+        patternChecklist[p.id][key] = el.checked;
+        localStorage.setItem('tl_pattern_checklist', JSON.stringify(patternChecklist));
+        if (el.checked) {
+            var ckXp = JSON.parse(localStorage.getItem('tl_ck_xp') || '[]');
+            if (ckXp.indexOf(key) === -1) {
+                ckXp.push(key);
+                localStorage.setItem('tl_ck_xp', JSON.stringify(ckXp));
+                awardXP(XP.checklist, 'checklist item');
+            }
+        }
+        updateStage1Banner();
+        evaluateStage1();
+        syncCourseModules();
+    };
+
+    function renderPatternLab() {
+        var grid = document.getElementById('pattern-grid');
+        grid.innerHTML = Object.keys(PATTERNS).map(function (id) {
+            var p = PATTERNS[id];
+            var locked = !isPatternAccessible(p);
+            var isActive = activePatternId === id;
+            var tierCls = p.tier === 'free' ? 'free' : p.tier === 'member' ? 'member' : 'paid';
+            var tierLbl = p.tier === 'free' ? 'Free' : p.tier === 'member' ? 'Sign up' : 'Paid';
+            var lockBtn = '';
+            if (locked) {
+                if (p.tier === 'member') lockBtn = '<button type="button" class="btn-activate" onclick="openSocialModal()">Unlock Member</button>';
+                else if (p.tier === 'paid') lockBtn = '<button type="button" class="btn-activate" onclick="switchTab(\'course\')">Stage 3 — Paid</button>';
+                else lockBtn = '<button type="button" class="btn-activate" disabled>Locked</button>';
+            }
+            return '<div class="pattern-card' + (locked ? ' locked' : '') + (isActive ? ' active-pattern' : '') + '">' +
+                '<div class="pattern-badges"><span class="badge ' + tierCls + '">' + tierLbl + '</span><span class="badge sheet">' + p.sheetLabel + '</span></div>' +
+                '<h4>' + p.name + '</h4><p>' + p.desc + '</p>' +
+                '<p><strong>Learn:</strong></p><ul>' + p.learn.map(function (l) { return '<li>' + l + '</li>'; }).join('') + '</ul>' +
+                '<p><strong>What often happens:</strong></p><ul>' + p.happens.map(function (h) { return '<li>' + h + '</li>'; }).join('') + '</ul>' +
+                '<div class="pattern-actions">' +
+                '<button type="button" class="btn-secondary" onclick="previewPattern(\'' + id + '\')">Preview</button>' +
+                (locked ? lockBtn
+                    : '<button type="button" class="btn-activate" onclick="requestActivatePattern(\'' + id + '\')">' + (isActive ? 'Active' : 'Activate') + '</button>') +
+                (isActive ? '<button type="button" class="btn-secondary" onclick="switchTab(\'radar\')">Go trade</button>' : '') +
+                '</div></div>';
+        }).join('');
+    }
+
+    function rebuildLifecycle() {
+        completedTrades = [];
+        openPositions = [];
+        var bySymbol = {};
+        var sorted = trades.slice().sort(function (a, b) { return tradeToUnix(a) - tradeToUnix(b) || a.id - b.id; });
+        sorted.forEach(function (t) {
+            if (!bySymbol[t.symbol]) bySymbol[t.symbol] = { lots: [] };
+            var book = bySymbol[t.symbol];
+            if (t.action === 'BUY') {
+                book.lots.push({ id: t.id, ts: tradeToUnix(t), price: Number(t.price), size: Number(t.size), origSize: Number(t.size), fees: Number(t.fees) || 0, workspace: wsOf(t) });
+            } else if (t.action === 'SELL') {
+                var remaining = Number(t.size), sellFees = Number(t.fees) || 0, sellSize = Number(t.size);
+                while (remaining > 1e-8 && book.lots.length) {
+                    var lot = book.lots[0], match = Math.min(remaining, lot.size);
+                    var buyFeePart = lot.fees * (match / lot.origSize), sellFeePart = sellFees * (match / sellSize);
+                    var gross = (Number(t.price) - lot.price) * match, fees = buyFeePart + sellFeePart, net = gross - fees;
+                    completedTrades.push({
+                        cid: completedTrades.length + 1, symbol: t.symbol, workspace: wsOf(t),
+                        entryId: lot.id, exitId: t.id, entryTs: lot.ts, exitTs: tradeToUnix(t),
+                        entryPrice: lot.price, exitPrice: Number(t.price), size: match,
+                        grossPnL: gross, fees: fees, netPnL: net,
+                        pctReturn: lot.price ? ((Number(t.price) - lot.price) / lot.price * 100) : 0,
+                        profitable: net >= 0, heldSec: tradeToUnix(t) - lot.ts
+                    });
+                    lot.size -= match; remaining -= match;
+                    if (lot.size <= 1e-8) book.lots.shift();
+                }
+            }
+        });
+        Object.keys(bySymbol).forEach(function (sym) {
+            var lots = bySymbol[sym].lots;
+            if (!lots.length) return;
+            var totalSize = lots.reduce(function (a, l) { return a + l.size; }, 0);
+            var cost = lots.reduce(function (a, l) { return a + l.price * l.size; }, 0);
+            openPositions.push({ symbol: sym, workspace: lots[0].workspace, size: totalSize, avgEntry: cost / totalSize, lots: lots.length, entryIds: lots.map(function (l) { return l.id; }) });
+        });
+        completedTrades.reverse();
+    }
+
+    function isRemovable(sym) { return DEFAULT_SYMBOLS[activeWorkspace].indexOf(sym) === -1; }
+    function symbolLabel(sym) {
+        if (LIVE[sym]) return LIVE[sym].label;
+        var cm = sym.match(/^([A-Z]{2,10})USD$/);
+        if (cm) return CRYPTO_LABELS[cm[1]] || (cm[1] + ' / USD');
+        if (['aud', 'energy'].indexOf(activeWorkspace) >= 0) return sym + ' (ASX)';
+        return sym;
+    }
+    function yahooIdFor(sym) {
+        if (LIVE[sym] && LIVE[sym].kind === 'yahoo') return LIVE[sym].id;
+        if (['aud', 'energy'].indexOf(activeWorkspace) >= 0) return sym + '.AX';
+        return null;
+    }
+    function binanceIdFor(sym) {
+        if (LIVE[sym] && LIVE[sym].kind === 'binance') return LIVE[sym].id;
+        if (/^[A-Z]{2,10}USD$/.test(sym)) return sym.replace('USD', 'USDT');
+        return null;
+    }
+    function hasLiveFeed(sym) { return !!(binanceIdFor(sym) || yahooIdFor(sym)); }
+    const MARKETS_SYMBOLS = ['BTCUSD', 'ETHUSD', 'XAUUSD', 'USOUSD'];
+    function sheetForSymbol(sym) {
+        if (MARKETS_SYMBOLS.indexOf(sym) >= 0) return 'markets';
+        if (/USD$|USDT$/i.test(sym)) return 'volatility';
+        if (/^[A-Z]{2,6}$/.test(sym)) return activeWorkspace === 'energy' ? 'energy' : 'aud';
+        return activeWorkspace;
+    }
+    function symbolAllowedOnSheet(ws, sym) { return sheetForSymbol(sym) === ws; }
+    function sanitizeWorkspaceSymbols() {
+        Object.keys(WORKSPACES).forEach(function (ws) {
+            if (!isSheetUnlocked(ws)) return;
+            var keep = [];
+            WORKSPACES[ws].symbols.forEach(function (sym) {
+                if (symbolAllowedOnSheet(ws, sym)) keep.push(sym);
+            });
+            DEFAULT_SYMBOLS[ws].forEach(function (d) { if (keep.indexOf(d) === -1) keep.unshift(d); });
+            WORKSPACES[ws].symbols = keep;
+        });
+        saveWorkspaceSymbols();
+    }
+
+    window.setFillMode = function (mode) { fillMode = mode; fillModes[activeWorkspace] = mode; localStorage.setItem('tl_fill_modes', JSON.stringify(fillModes)); updateFillModeUI(); };
+    function updateFillModeUI() {
+        document.querySelectorAll('input[name="fill-mode"]').forEach(function (r) { r.checked = r.value === fillMode; });
+        var priceInput = document.getElementById('e-pr');
+        if (fillMode === 'market' && hasLiveFeed(cur.symbol) && cur.price > 0) { priceInput.readOnly = true; priceInput.value = Number(cur.price).toFixed(2); }
+        else priceInput.readOnly = false;
+    }
+    function getExecutionPrice() { return fillMode === 'market' && cur.price > 0 ? cur.price : parseFloat(document.getElementById('e-pr').value) || 0; }
+    window.toggleMarkers = function () { showMarkers = document.getElementById('show-markers').checked; localStorage.setItem('tl_show_markers', showMarkers ? 'true' : 'false'); if (!selectedCompleted) renderTradeMarkers(); };
+    window.setJournalView = function (view) {
+        journalView = view;
+        document.getElementById('jr-open').classList.toggle('active', view === 'open');
+        document.getElementById('jr-done').classList.toggle('active', view === 'done');
+        if (view === 'done') localStorage.setItem('tl_seen_review', 'true');
+        renderJournalReview();
+        syncCourseModules();
+    };
+    window.reviewCompleted = function (cid) {
+        var ct = completedTrades.find(function (c) { return c.cid === cid; });
+        if (!ct) return;
+        if (ct.symbol !== activeSymbol) selectSymbol(ct.symbol);
+        selectedCompleted = ct;
+        highlightCompleted(ct);
+        renderJournalReview();
+    };
+    window.setVaultSheet = function (ws) { vaultSheet = ws; document.getElementById('vs-markets').classList.toggle('active', ws === 'markets'); document.getElementById('vs-aud').classList.toggle('active', ws === 'aud'); renderTables(); };
+    window.setVaultView = function (view) { vaultView = view; document.getElementById('vv-trades').classList.toggle('active', view === 'trades'); document.getElementById('vv-bysymbol').classList.toggle('active', view === 'bysymbol'); renderTables(); };
+    window.setVaultSort = function (sort) { vaultSort = sort; renderTables(); };
+    window.setVaultFilter = function (f) { vaultFilter = f; ['day','month','year'].forEach(function (x) { document.getElementById('vf-' + x).classList.toggle('active', x === f); }); renderTables(); };
+
+    function updateWorkspaceUI() {
+        var hint = document.getElementById('ws-hint');
+        if (hint) {
+            if (hasBrokerHandoff()) hint.textContent = WORKSPACES[activeWorkspace].hint;
+            else {
+                var lockedHints = {
+                    markets: 'Journal here · BTC/ETH live in-app · gold/oil ~delayed — Stage 4 unlocks broker handoff',
+                    aud: 'Journal here · ASX ~20 min delayed or last close — Stage 4 unlocks Stake live tape',
+                    energy: 'Member sector watchlist · ASX ~20 min delayed — Stage 4 unlocks Stake',
+                    volatility: 'Paid patterns sheet · crypto live in-app · Stage 4 unlocks Swyftx'
+                };
+                hint.textContent = lockedHints[activeWorkspace] || WORKSPACES[activeWorkspace].hint;
+            }
+            hint.className = 'ws-hint' + (activeWorkspace === 'aud' ? ' aud' : '');
+        }
+        document.getElementById('strat-title').textContent = WORKSPACES[activeWorkspace].label.replace('Sheet', 'Config');
+        document.getElementById('partner-markets').classList.toggle('visible', activeWorkspace === 'markets' || activeWorkspace === 'volatility');
+        document.getElementById('partner-aud').classList.toggle('visible', activeWorkspace === 'aud' || activeWorkspace === 'energy');
+        document.getElementById('price-label').textContent = (activeWorkspace === 'aud' || activeWorkspace === 'energy') ? 'Price (AUD)' : 'Price (USD)';
+        fillMode = fillModes[activeWorkspace] || (activeWorkspace === 'aud' ? 'target' : 'market');
+        updateFillModeUI();
+        updatePatternUI();
+        updatePartnerUI();
+        updateBrokerCTAs();
+    }
+
+    function filterByPeriod(list) {
+        var today = todayStr(), month = today.slice(0, 7), year = today.slice(0, 4);
+        return list.filter(function (t) {
+            var d = t.date || today;
+            if (vaultFilter === 'day') return d === today;
+            if (vaultFilter === 'month') return d.startsWith(month);
+            if (vaultFilter === 'year') return d.startsWith(year);
+            return true;
+        });
+    }
+    function vaultPeriodTrades(ws) { return filterByPeriod(trades.filter(function (t) { return wsOf(t) === ws; })); }
+    function sortVaultTrades(rows) {
+        var list = rows.slice();
+        if (vaultSort === 'symbol') list.sort(function (a, b) { return (a.symbol || '').localeCompare(b.symbol || ''); });
+        else if (vaultSort === 'net-desc') list.sort(function (a, b) { return (b.adjusted || 0) - (a.adjusted || 0); });
+        else if (vaultSort === 'net-asc') list.sort(function (a, b) { return (a.adjusted || 0) - (b.adjusted || 0); });
+        return list;
+    }
+    function buildBySymbolRows(wsRows) {
+        var map = {};
+        wsRows.forEach(function (t) {
+            if (!map[t.symbol]) map[t.symbol] = { symbol: t.symbol, count: 0, buys: 0, sells: 0, net: 0 };
+            map[t.symbol].count++;
+            if (t.action === 'BUY') map[t.symbol].buys++; else map[t.symbol].sells++;
+            map[t.symbol].net += (t.adjusted || 0);
+        });
+        return Object.keys(map).map(function (k) { return map[k]; });
+    }
+    function updateVaultSheetCards() {
+        ['markets','aud'].forEach(function (ws) {
+            var rows = vaultPeriodTrades(ws);
+            var net = rows.reduce(function (a, t) { return a + (t.adjusted || 0); }, 0);
+            var el = document.getElementById('vs-' + ws + '-stat');
+            if (el) el.textContent = rows.length + ' trades · Net ' + fmtMoney(net);
+        });
+    }
+    function updateVaultThead() {
+        var thead = document.getElementById('vault-thead');
+        if (vaultView === 'bysymbol') thead.innerHTML = '<tr><th>Symbol</th><th>Trades</th><th>Buys</th><th>Sells</th><th>Net</th></tr>';
+        else thead.innerHTML = '<tr><th>ID</th><th>Asset</th><th>Fill</th><th>Type</th><th>Raw</th><th>Fees</th><th>Tax %</th><th>Net</th></tr>';
+    }
+
+    function renderSymbolTabs() {
+        document.getElementById('symbol-tabs').innerHTML = WORKSPACES[activeWorkspace].symbols.map(function (s) {
+            var rm = isRemovable(s) ? '<button type="button" class="tab-remove" onclick="removeSymbol(\'' + s + '\')">×</button>' : '';
+            return '<span class="sym-tab-wrap"><button type="button" class="tab-btn' + (s === activeSymbol ? ' active' : '') + '" onclick="selectSymbol(\'' + s + '\')">' + s + '</button>' + rm + '</span>';
+        }).join('');
+    }
+
+    window.switchWorkspace = function (id) {
+        if (!WORKSPACES[id] || !isSheetUnlocked(id)) return;
+        activeWorkspace = id;
+        localStorage.setItem('tl_workspace', id);
+        if (WORKSPACES[id].symbols.indexOf(activeSymbol) === -1) activeSymbol = WORKSPACES[id].symbols[0];
+        rebuildWsSelect();
+        updateWorkspaceUI();
+        renderSymbolTabs();
+        selectSymbol(activeSymbol);
+        renderTables();
+    };
+    window.selectSymbol = function (sym) {
+        activeSymbol = sym;
+        renderSymbolTabs();
+        if (selectedCompleted && selectedCompleted.symbol !== sym) clearReview();
+        if (hasLiveFeed(sym)) startLiveFeed(sym);
+        else { showFeedError(sym, symbolLabel(sym), sym + ' — chart context only'); updateBrokerCTAs(); }
+        renderJournalReview();
+    };
+    window.promptAddSymbol = function () {
+        var raw = prompt('Add ticker');
+        if (!raw) return;
+        var sym = raw.trim().toUpperCase();
+        var target = sheetForSymbol(sym);
+        if (target !== activeWorkspace) { alert('Switching to ' + WORKSPACES[target].label); switchWorkspace(target); }
+        if (WORKSPACES[activeWorkspace].symbols.indexOf(sym) === -1) { WORKSPACES[activeWorkspace].symbols.push(sym); saveWorkspaceSymbols(); }
+        selectSymbol(sym);
+    };
+    window.removeSymbol = function (sym) {
+        if (!isRemovable(sym) || !confirm('Remove ' + sym + '?')) return;
+        WORKSPACES[activeWorkspace].symbols = WORKSPACES[activeWorkspace].symbols.filter(function (s) { return s !== sym; });
+        saveWorkspaceSymbols();
+        if (activeSymbol === sym) activeSymbol = WORKSPACES[activeWorkspace].symbols[0];
+        renderSymbolTabs();
+        selectSymbol(activeSymbol);
+    };
+
+    function snapToChartTime(unix) {
+        if (!candles.length) return unix;
+        var best = candles[0].time, diff = Math.abs(unix - best);
+        for (var i = 1; i < candles.length; i++) { var d = Math.abs(unix - candles[i].time); if (d < diff) { diff = d; best = candles[i].time; } }
+        return best;
+    }
+    function clearHighlight() {
+        activePriceLines.forEach(function (pl) { try { candleSeries.removePriceLine(pl); } catch (e) {} });
+        activePriceLines = [];
+        if (bandSeries) bandSeries.setData([]);
+        if (candleSeries && !selectedCompleted && !exampleMode) renderTradeMarkers();
+        if (exampleMode && !selectedCompleted) candleSeries.setMarkers([]);
+    }
+    function renderTradeMarkers() {
+        if (!candleSeries || selectedCompleted || exampleMode) return;
+        if (!showMarkers || !candles.length) { candleSeries.setMarkers([]); return; }
+        var markers = trades.filter(function (t) { return t.symbol === activeSymbol; }).map(function (t) {
+            var isBuy = t.action === 'BUY';
+            return { time: snapToChartTime(tradeToUnix(t)), position: isBuy ? 'belowBar' : 'aboveBar', color: isBuy ? '#26a69a' : '#ff5a5f', shape: isBuy ? 'arrowUp' : 'arrowDown', text: '#' + t.id + ' ' + t.action };
+        });
+        markers.sort(function (a, b) { return a.time - b.time; });
+        candleSeries.setMarkers(markers);
+    }
+    function highlightCompleted(ct) {
+        if (!candleSeries || !lwChart) return;
+        exampleMode = false;
+        clearHighlight();
+        var entryTs = snapToChartTime(ct.entryTs), exitTs = snapToChartTime(ct.exitTs);
+        var lo = Math.min(ct.entryPrice, ct.exitPrice), hi = Math.max(ct.entryPrice, ct.exitPrice), win = ct.profitable;
+        activePriceLines.push(candleSeries.createPriceLine({ price: ct.entryPrice, color: '#26a69a', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'Entry #' + ct.entryId }));
+        activePriceLines.push(candleSeries.createPriceLine({ price: ct.exitPrice, color: '#ff5a5f', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'Exit #' + ct.exitId }));
+        if (!bandSeries) {
+            bandSeries = lwChart.addBaselineSeries({ baseValue: { type: 'price', price: lo }, topFillColor1: 'rgba(38,166,154,0.22)', topFillColor2: 'rgba(38,166,154,0.22)', bottomFillColor1: 'transparent', bottomFillColor2: 'transparent', lineVisible: false, priceLineVisible: false, lastValueVisible: false });
+        }
+        bandSeries.applyOptions({ baseValue: { type: 'price', price: lo }, topFillColor1: win ? 'rgba(38,166,154,0.22)' : 'rgba(255,90,95,0.22)', topFillColor2: win ? 'rgba(38,166,154,0.22)' : 'rgba(255,90,95,0.22)' });
+        bandSeries.setData([{ time: entryTs, value: hi }, { time: exitTs, value: hi }]);
+        candleSeries.setMarkers([
+            { time: entryTs, position: 'belowBar', color: '#26a69a', shape: 'arrowUp', text: '#' + ct.entryId + ' BUY' },
+            { time: exitTs, position: 'aboveBar', color: '#ff5a5f', shape: 'arrowDown', text: '#' + ct.exitId + ' SELL' }
+        ]);
+        try { lwChart.timeScale().setVisibleRange({ from: entryTs - 120, to: exitTs + 120 }); } catch (e) {}
+    }
+
+    function renderJournalReview() {
+        rebuildLifecycle();
+        var symOpen = openPositions.filter(function (p) { return p.symbol === activeSymbol && p.workspace === activeWorkspace; });
+        var symDone = completedTrades.filter(function (c) { return c.symbol === activeSymbol && c.workspace === activeWorkspace; });
+        var detail = document.getElementById('jr-detail'), list = document.getElementById('jr-list');
+        if (selectedCompleted && selectedCompleted.symbol === activeSymbol) {
+            var ct = selectedCompleted;
+            detail.className = 'jr-detail ' + (ct.profitable ? 'win' : 'loss');
+            detail.innerHTML = '<strong>' + ct.symbol + '</strong> · #' + ct.entryId + ' → #' + ct.exitId + '<br>Entry <strong>' + fmtMoney(ct.entryPrice) + '</strong> → Exit <strong>' + fmtMoney(ct.exitPrice) + '</strong> · Size ' + ct.size + '<br>Net <span class="' + (ct.profitable ? 'pnl-win' : 'pnl-loss') + '">' + fmtMoney(ct.netPnL) + ' (' + fmtPct(ct.pctReturn) + ')</span> · Held ' + fmtHeld(ct.heldSec);
+        } else if (journalView === 'open' && symOpen.length) {
+            var p = symOpen[0];
+            detail.className = 'jr-detail open-pos';
+            detail.innerHTML = '<strong>' + p.symbol + '</strong> open · ' + p.size.toFixed(4) + ' @ ' + fmtMoney(p.avgEntry);
+        } else {
+            detail.className = 'jr-detail';
+            detail.textContent = journalView === 'open' ? 'No open position on ' + activeSymbol : 'Click a completed trade to see entry→exit highlight.';
+        }
+        if (journalView === 'open') {
+            list.innerHTML = symOpen.length ? symOpen.map(function (p) {
+                return '<div class="jr-row"><div>' + p.symbol + ' · ' + p.size.toFixed(4) + '</div><div class="jr-right" style="color:var(--gold)">OPEN</div></div>';
+            }).join('') : '<div class="empty-row">No open positions.</div>';
+        } else {
+            list.innerHTML = symDone.length ? symDone.map(function (c) {
+                return '<div class="jr-row' + (selectedCompleted && selectedCompleted.cid === c.cid ? ' active' : '') + '" onclick="reviewCompleted(' + c.cid + ')"><div>#' + c.entryId + '→#' + c.exitId + '</div><div class="jr-right ' + (c.profitable ? 'win' : 'loss') + '">' + fmtMoney(c.netPnL) + '</div></div>';
+            }).join('') : '<div class="empty-row">No completed trades yet.</div>';
+        }
+        var wsDone = completedTrades.filter(function (c) { return c.workspace === activeWorkspace; });
+        var wins = wsDone.filter(function (c) { return c.profitable; }).length;
+        document.getElementById('win-ratio').textContent = wsDone.length ? Math.round(wins / wsDone.length * 100) + '%' : '—';
+    }
+
+    function ensureChart() {
+        if (lwChart) return candleSeries;
+        var el = document.getElementById('chart-container'), size = { width: el.parentElement.clientWidth, height: 380 };
+        lwChart = LightweightCharts.createChart(el, {
+            width: size.width, height: size.height,
+            layout: { background: { color: '#0e1017' }, textColor: '#9ca3af', attributionLogo: false },
+            grid: { vertLines: { color: '#1a1d29' }, horzLines: { color: '#1c2130' } },
+            rightPriceScale: { borderColor: '#23263a' },
+            timeScale: { borderColor: '#23263a', timeVisible: true, secondsVisible: false }
+        });
+        candleSeries = lwChart.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ff5a5f', borderUpColor: '#26a69a', borderDownColor: '#ff5a5f', wickUpColor: '#26a69a', wickDownColor: '#ff5a5f' });
+        return candleSeries;
+    }
+    function resizeChart() { if (lwChart) lwChart.applyOptions({ width: document.querySelector('.chart-canvas-wrap').clientWidth, height: 380 }); }
+    function pushChartData() {
+        ensureChart();
+        if (!candles.length) { candleSeries.setData([]); return; }
+        candleSeries.setData(candles.map(function (c) { return { time: c.time, open: c.o, high: c.h, low: c.l, close: c.c }; }));
+        lwChart.timeScale().scrollToRealTime();
+        if (selectedCompleted) highlightCompleted(selectedCompleted);
+        else renderTradeMarkers();
+    }
+    function updateChartBar(bar) { ensureChart(); candleSeries.update({ time: bar.time, open: bar.o, high: bar.h, low: bar.l, close: bar.c }); }
+    function mergeCandle(bar) {
+        if (!candles.length) candles.push(bar);
+        else {
+            var last = candles[candles.length - 1];
+            if (last.time === bar.time) { last.o = bar.o; last.h = bar.h; last.l = bar.l; last.c = bar.c; }
+            else if (bar.time > last.time) { candles.push(bar); if (candles.length > MAX_BARS) candles.shift(); }
+        }
+    }
+    function setChartMeta(text) { document.getElementById('chart-meta').textContent = text; }
+    function showChartMessage(msg) {
+        candles = []; ensureChart(); candleSeries.setData([]); clearHighlight();
+        document.getElementById('chart-ohlc').textContent = msg;
+        setChartMeta(msg);
+    }
+    function showFeedError(symbol, label, msg) {
+        showChartMessage(msg);
+        feedMode = 'none';
+        document.getElementById('t-pr').textContent = '—';
+        document.getElementById('t-lbl').innerHTML = (label || symbolLabel(symbol)) + priceBadgeHtml('unavailable');
+        updateBrokerCTAs();
+    }
+    function feedStatusNote() {
+        if (feedMode === 'binance-ws') return ' · live stream';
+        if (feedMode === 'yahoo-asx') return ' · ~20 min delayed · polls every 15s';
+        if (feedMode === 'yahoo-poll') return ' · delayed · polls every 15s';
+        if (feedMode === 'yahoo-close') return ' · last close · market may be closed';
+        return '';
+    }
+    function updateChartHeader() {
+        if (!candles.length) return;
+        var last = candles[candles.length - 1];
+        document.getElementById('chart-ohlc').innerHTML = 'O <strong>' + fmtAxis(last.o) + '</strong> C <span class="last">' + fmtAxis(last.c) + '</span>';
+        setChartMeta(candles.length + ' bars · ' + candleSource + feedStatusNote());
+    }
+
+    function fetchJson(url, ms) {
+        var ctrl = new AbortController();
+        var timer = setTimeout(function () { ctrl.abort(); }, ms || FETCH_TIMEOUT_MS);
+        return fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } }).then(function (res) {
+            clearTimeout(timer);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        }).catch(function (e) {
+            clearTimeout(timer);
+            throw e;
+        });
+    }
+    function yahooChartUrl(yId, interval, range) {
+        return '/api/yahoo-chart?symbol=' + encodeURIComponent(yId) + '&interval=' + encodeURIComponent(interval) + '&range=' + encodeURIComponent(range);
+    }
+    function parseYahooBars(result) {
+        if (!result) return [];
+        var ts = result.timestamp || [], q = (result.indicators && result.indicators.quote && result.indicators.quote[0]) || {}, out = [];
+        for (var i = 0; i < ts.length; i++) {
+            var c = q.close && q.close[i];
+            if (c == null) continue;
+            var o = q.open && q.open[i] != null ? q.open[i] : c;
+            var h = q.high && q.high[i] != null ? q.high[i] : c;
+            var l = q.low && q.low[i] != null ? q.low[i] : c;
+            out.push({ time: ts[i], o: o, h: h, l: l, c: c });
+        }
+        return out;
+    }
+    function yahooMetaFromResult(result) {
+        return result && result.meta ? result.meta : null;
+    }
+    async function loadYahooMetaPrice(yId) {
+        var json = await fetchJson(yahooChartUrl(yId, '1d', '5d'), 8000);
+        var r = json.chart && json.chart.result && json.chart.result[0];
+        var meta = yahooMetaFromResult(r);
+        if (!meta) throw new Error('no meta');
+        var price = meta.regularMarketPrice != null ? meta.regularMarketPrice : meta.chartPreviousClose;
+        if (price == null) price = meta.previousClose;
+        if (price == null) throw new Error('no price');
+        return { price: price, marketState: meta.marketState || '' };
+    }
+
+    function stopFeeds() {
+        if (liveTimer) clearInterval(liveTimer);
+        liveTimer = null;
+        if (binanceWs) { binanceWs.onclose = null; binanceWs.onerror = null; binanceWs.close(); binanceWs = null; }
+        feedMode = 'none';
+        binanceWsSym = null;
+    }
+    var binanceWsSym = null, binanceWsRetries = 0;
+    function openBinanceWs(binId, label) {
+        if (binanceWs) { binanceWs.onclose = null; binanceWs.onerror = null; binanceWs.close(); }
+        binanceWsSym = binId;
+        feedMode = 'binance-ws';
+        binanceWs = new WebSocket('wss://stream.binance.com:9443/ws/' + binId.toLowerCase() + '@kline_' + BINANCE_INTERVAL);
+        binanceWs.onopen = function () { binanceWsRetries = 0; };
+        binanceWs.onmessage = function (ev) {
+            var k = JSON.parse(ev.data).k, bar = { time: Math.floor(k.t / 1000), o: +k.o, h: +k.h, l: +k.l, c: +k.c };
+            mergeCandle(bar); updateChartBar(bar); updateChartHeader();
+            applyLivePrice(cur.symbol, bar.c, label, false);
+            candleSource = 'Binance 1m · WS';
+        };
+        binanceWs.onerror = function () { setChartMeta('Binance stream error — retrying…'); };
+        binanceWs.onclose = function () {
+            if (feedMode !== 'binance-ws' || binanceWsSym !== binId) return;
+            if (binanceWsRetries >= 5) { setChartMeta('Binance stream offline — showing last loaded bars'); return; }
+            binanceWsRetries++;
+            setTimeout(function () {
+                if (cur.symbol && binanceIdFor(cur.symbol) === binId) openBinanceWs(binId, label);
+            }, 2000 * binanceWsRetries);
+        };
+    }
+    async function loadBinanceCandles(binId) {
+        var data = await fetchJson('https://api.binance.com/api/v3/klines?symbol=' + binId + '&interval=' + BINANCE_INTERVAL + '&limit=' + MAX_BARS);
+        if (!Array.isArray(data) || !data.length) throw new Error(data && data.msg ? data.msg : 'Binance empty');
+        candles = data.map(function (k) { return { time: Math.floor(k[0] / 1000), o: +k[1], h: +k[2], l: +k[3], c: +k[4] }; });
+        candleSource = 'Binance 1m'; pushChartData(); updateChartHeader();
+    }
+    async function loadYahooCandles(yId) {
+        var attempts = [
+            { interval: '5m', range: '1d', label: 'Yahoo 5m' },
+            { interval: '15m', range: '5d', label: 'Yahoo 15m' },
+            { interval: '1h', range: '5d', label: 'Yahoo 1h' }
+        ];
+        for (var a = 0; a < attempts.length; a++) {
+            var json = await fetchJson(yahooChartUrl(yId, attempts[a].interval, attempts[a].range));
+            var result = json.chart && json.chart.result && json.chart.result[0];
+            var out = parseYahooBars(result);
+            if (out.length) {
+                candles = out.slice(-MAX_BARS);
+                candleSource = attempts[a].label;
+                pushChartData();
+                updateChartHeader();
+                return;
+            }
+        }
+        throw new Error('empty');
+    }
+    async function loadYahooDailyFallback(yId, symbol, label) {
+        var json = await fetchJson(yahooChartUrl(yId, '1d', '3mo'));
+        var r = json.chart && json.chart.result && json.chart.result[0];
+        if (!r) throw new Error('Yahoo daily empty');
+        var meta = r.meta || {}, out = parseYahooBars(r);
+        var close = meta.regularMarketPrice || meta.chartPreviousClose || meta.previousClose || (out.length ? out[out.length - 1].c : 0);
+        if (!out.length) out = [{ time: meta.regularMarketTime || Math.floor(Date.now() / 1000), o: close, h: close, l: close, c: close }];
+        candles = out.slice(-MAX_BARS);
+        candleSource = 'Yahoo daily';
+        feedMode = 'yahoo-close';
+        pushChartData();
+        applyLivePrice(symbol, close, label, 'close');
+        document.getElementById('chart-ohlc').innerHTML = 'Last close <span class="last"><strong>' + fmtAxis(close) + '</strong></span>';
+        setChartMeta(candles.length + ' bars · ' + candleSource + feedStatusNote());
+    }
+    async function fetchYahooPrice(yId, label, symbol) {
+        var json = await fetchJson(yahooChartUrl(yId, '1m', '1d'));
+        var meta = json.chart && json.chart.result && json.chart.result[0] && json.chart.result[0].meta;
+        if (!meta || meta.regularMarketPrice == null) throw new Error('no price');
+        var price = meta.regularMarketPrice;
+        var sym = symbol || cur.symbol;
+        var mode = resolveYahooPriceMode(sym, meta);
+        applyLivePrice(sym, price, label, mode);
+        if (candles.length) {
+            var b = candles[candles.length - 1];
+            b.c = price; b.h = Math.max(b.h, price); b.l = Math.min(b.l, price);
+            updateChartBar(b);
+            updateChartHeader();
+        }
+    }
+    function applyLivePrice(symbol, price, label, mode) {
+        cur = { symbol: symbol, price: Number(price), label: label };
+        document.getElementById('c-as').value = symbol;
+        document.getElementById('t-pr').textContent = price > 0 ? fmtMoney(price) : '—';
+        document.getElementById('t-lbl').innerHTML = label + priceBadgeHtml(mode);
+        updateFillModeUI();
+        updateBrokerCTAs();
+    }
+    async function startYahooFeed(yId, symbol, label) {
+        var delayMode = yahooDelayMode(symbol);
+        try {
+            var metaSnap = await loadYahooMetaPrice(yId);
+            var quickMeta = { marketState: metaSnap.marketState };
+            var quickMode = isAsxSymbol(symbol) ? (metaSnap.marketState === 'CLOSED' ? 'close' : 'asx-delayed') : (metaSnap.marketState === 'REGULAR' ? yahooDelayMode(symbol) : 'close');
+            applyLivePrice(symbol, metaSnap.price, label, quickMode);
+        } catch (qe) { /* candles path will set price */ }
+        try {
+            await loadYahooCandles(yId);
+            feedMode = isAsxSymbol(symbol) ? 'yahoo-asx' : 'yahoo-poll';
+            try {
+                await fetchYahooPrice(yId, label, symbol);
+            } catch (pe) {
+                if (candles.length) applyLivePrice(symbol, candles[candles.length - 1].c, label, delayMode);
+            }
+            liveTimer = setInterval(function () {
+                fetchYahooPrice(yId, label, symbol).catch(function () {});
+            }, YAHOO_POLL_MS);
+        } catch (e) {
+            setChartMeta('Intraday empty — loading last close…');
+            await loadYahooDailyFallback(yId, symbol, label);
+        }
+    }
+    function feedOfflineMessage(symbol) {
+        if (location.protocol === 'file:') return symbol + ' — open via http://127.0.0.1:8080 (not file://)';
+        return symbol + ' — feed offline · restart with python3 serve.py on Desktop';
+    }
+    async function startLiveFeed(symbol) {
+        stopFeeds();
+        cur.symbol = symbol;
+        document.getElementById('t-pr').textContent = 'Loading…';
+        setChartMeta('Connecting to ' + symbol + '…');
+        var binId = binanceIdFor(symbol), yId = yahooIdFor(symbol);
+        var label = symbolLabel(symbol);
+        try {
+            if (binId) {
+                await loadBinanceCandles(binId);
+                applyLivePrice(symbol, candles[candles.length - 1].c, label, false);
+                openBinanceWs(binId, label);
+                updateBrokerCTAs();
+                return;
+            }
+            if (yId) {
+                await startYahooFeed(yId, symbol, label);
+                updateBrokerCTAs();
+                return;
+            }
+            showFeedError(symbol, label, symbol + ' — chart context only');
+            updateBrokerCTAs();
+        } catch (e) {
+            if (yId) {
+                try {
+                    setChartMeta('Primary feed failed — trying last close…');
+                    await loadYahooDailyFallback(yId, symbol, label);
+                    updateBrokerCTAs();
+                    return;
+                } catch (e2) {}
+            }
+            showFeedError(symbol, label, feedOfflineMessage(symbol));
+            updateBrokerCTAs();
+        }
+    }
+
+    function saveTrades() { localStorage.setItem('tl_trades', JSON.stringify(trades)); }
+    function renderTables() {
+        updateVaultSheetCards(); updateVaultThead();
+        var wsTrades = trades.filter(function (t) { return wsOf(t) === activeWorkspace; });
+        var vaultRows = sortVaultTrades(vaultPeriodTrades(vaultSheet));
+        var fillLbl = function (t) { return '<span class="fill-tag">' + (t.fillType === 'target' ? 'TGT' : 'MKT') + '</span>'; };
+        document.getElementById('t-body').innerHTML = wsTrades.length ? wsTrades.map(function (t) {
+            return '<tr><td>' + t.time + '</td><td>' + t.symbol + '</td><td>' + fillLbl(t) + '</td><td class="' + (t.action === 'BUY' ? 'act-buy' : 'act-sell') + '">' + t.action + '</td><td>' + Number(t.price).toFixed(2) + '</td><td>' + t.size + '</td></tr>';
+        }).join('') : '<tr><td colspan="6" class="empty-row">No trades yet</td></tr>';
+        if (vaultView === 'bysymbol') {
+            document.getElementById('l-body').innerHTML = buildBySymbolRows(vaultRows).map(function (r) {
+                return '<tr><td>' + r.symbol + '</td><td>' + r.count + '</td><td>' + r.buys + '</td><td>' + r.sells + '</td><td>' + fmtMoney(r.net) + '</td></tr>';
+            }).join('') || '<tr><td colspan="5" class="empty-row">No trades</td></tr>';
+        } else {
+            document.getElementById('l-body').innerHTML = vaultRows.length ? vaultRows.map(function (t) {
+                return '<tr><td>#' + t.id + '</td><td>' + t.symbol + '</td><td>' + fillLbl(t) + '</td><td>' + t.action + '</td><td>' + fmtMoney(t.raw) + '</td><td>' + fmtMoney(t.fees) + '</td><td>' + t.taxPct + '%</td><td>' + fmtMoney(t.adjusted) + '</td></tr>';
+            }).join('') : '<tr><td colspan="8" class="empty-row">No trades</td></tr>';
+        }
+        document.getElementById('vault-summary').textContent = WORKSPACES[vaultSheet].label + ' · ' + vaultRows.length + ' trades';
+        renderJournalReview();
+    }
+
+    window.switchTab = function (tabId) {
+        document.querySelectorAll('.nav-item').forEach(function (el) { el.classList.remove('active'); });
+        document.getElementById('nav-' + tabId).classList.add('active');
+        document.querySelectorAll('.tab-panel').forEach(function (el) { el.classList.remove('active'); });
+        document.getElementById('panel-' + tabId).classList.add('active');
+        if (tabId === 'radar') {
+            localStorage.setItem('tl_seen_radar', 'true');
+            setTimeout(resizeChart, 80);
+            syncCourseModules();
+        }
+        if (tabId === 'patterns') renderPatternLab();
+        if (tabId === 'course') renderCoursePath();
+    };
+
+    window.ex = function (action) {
+        if (!isEmailVerified()) {
+            openEmailModal(function () { ex(action); });
+            return;
+        }
+        var p = getActivePattern();
+        if (p && needsDisclaimer(p.id)) {
+            showDisclaimerThen(function () { ex(action); }, p.id);
+            return;
+        }
+        var symbol = document.getElementById('c-as').value, price = getExecutionPrice(), size = parseFloat(document.getElementById('e-sz').value) || 0;
+        var feePct = parseFloat(document.getElementById('fee-pct').value) || 0, taxPct = parseFloat(document.getElementById('tax-pct').value) || 0;
+        if (!price) { setStatus('Enter price or wait for live quote.'); return; }
+        var raw = price * size, fees = raw * (feePct / 100), afterFees = raw - fees, adjusted = afterFees - afterFees * (taxPct / 100);
+        trades.unshift({
+            id: tradeId++, time: new Date().toLocaleTimeString(), date: todayStr(), ts: Math.floor(Date.now() / 1000),
+            workspace: activeWorkspace, fillType: fillMode, patternId: activePatternId || null,
+            anchor: document.getElementById('m-an').value,
+            symbol: symbol, action: action, price: price, size: size,
+            raw: raw, fees: fees, taxPct: taxPct, adjusted: adjusted
+        });
+        saveTrades(); renderTables();
+        if (!selectedCompleted) renderTradeMarkers();
+        syncCourseModules();
+        var tradeXpCount = parseInt(localStorage.getItem('tl_trade_xp_count') || '0', 10) || 0;
+        if (tradeXpCount < 20) {
+            localStorage.setItem('tl_trade_xp_count', String(tradeXpCount + 1));
+            awardXP(XP.trade, 'journal log');
+        } else {
+            setStatus('Logged ' + action + ' #' + trades[0].id + ' · journal only');
+        }
+    };
+
+    window.addEventListener('load', function () {
+        sanitizeWorkspaceSymbols();
+        setupSocialLinks();
+        setupPartnerLinks();
+        updatePartnerUI();
+        rebuildWsSelect();
+        updateTierUI();
+        document.getElementById('show-markers').checked = showMarkers;
+        if (activePatternId && PATTERNS[activePatternId]) updatePatternUI();
+        if (emailVerified && !hasDisplayName()) {
+            document.getElementById('verify-name-input').value = '';
+            showEmailStep('name');
+            document.getElementById('email-overlay').classList.add('show');
+        }
+        evaluateStage1();
+        syncCourseModules();
+        renderSymbolTabs();
+        renderTables();
+        selectSymbol(activeSymbol);
+        if (!stage1Complete && !localStorage.getItem('tl_tour_skipped') && !localStorage.getItem('tl_tour_seen')) {
+            if (!(emailVerified && !hasDisplayName())) {
+                setTimeout(function () { startStage1Tour(0); }, 700);
+            }
+        }
+    });
+    window.addEventListener('resize', resizeChart);
+})();
+</script>
+</body>
+</html>
 </body>
 </html>
